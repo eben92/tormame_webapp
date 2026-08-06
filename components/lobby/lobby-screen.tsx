@@ -12,6 +12,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { CategoryBubbles } from "@/components/lobby/category-bubbles";
 import { LobbyAddressButton } from "@/components/lobby/lobby-address-button";
+import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import { useGetCategories, type CategoryChip } from "@/lib/api/services/catalog";
 import { STRINGS } from "@/lib/strings";
 
@@ -35,9 +36,14 @@ function BrandMark({ size = 30 }: { size?: number }) {
   );
 }
 
-export function LobbyScreen() {
+export function LobbyScreen({
+  /** Verticals prerendered on the server — the lobby paints with its bubbles. */
+  initialCategories,
+}: {
+  initialCategories?: CategoriesGroup[] | null;
+}) {
   const router = useRouter();
-  const { data, isLoading } = useGetCategories();
+  const { data, isLoading } = useGetCategories(initialCategories);
   const categories = React.useMemo<CategoryChip[]>(() => data ?? [], [data]);
 
   const handleCategoryPress = (categoryId: string) =>

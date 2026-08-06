@@ -2,13 +2,16 @@
 
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { apiFetch } from "@/lib/api/client";
-import { CompanySchema, type Company } from "@/lib/api/schemas/catalog";
-import { paginated } from "@/lib/api/schemas/common";
+import {
+  CompanyPageSchema,
+  CompanySchema,
+  type Company,
+  type CompanyPage,
+} from "@/lib/api/schemas/catalog";
+import { COMPANIES_PAGE_SIZE } from "@/lib/api/constants";
 import { useOnboardingStore } from "@/stores/onboarding";
 
-export const COMPANIES_PAGE_SIZE = 20;
-
-const CompanyPageSchema = paginated(CompanySchema);
+export { COMPANIES_PAGE_SIZE };
 
 type CompanyParams = {
   limit?: number;
@@ -24,15 +27,29 @@ type CompanyParams = {
  */
 export function useGetCompanies(
   params?: CompanyParams,
-  options?: { enabled?: boolean },
+  options?: {
+    enabled?: boolean;
+    /**
+     * First page rendered on the server. It is city-agnostic (the server can't
+     * read the customer's city), so it is marked stale on arrival: the list
+     * paints instantly and the city-resolved delivery fees arrive with the
+     * background refetch.
+     */
+    initialPage?: CompanyPage | null;
+  },
 ) {
   const city = useOnboardingStore((state) => state.city);
+  const initialPage = options?.initialPage;
 
   return useInfiniteQuery({
     queryKey: ["companies", params ?? null, city],
     initialPageParam: 0,
     enabled: options?.enabled ?? true,
     staleTime: 60_000,
+    initialData: initialPage
+      ? { pages: [initialPage], pageParams: [0] }
+      : undefined,
+    initialDataUpdatedAt: initialPage ? 0 : undefined,
     queryFn: ({ pageParam }) => {
       const limit = params?.limit ?? COMPANIES_PAGE_SIZE;
       const searchParams = new URLSearchParams();
@@ -59,6 +76,8 @@ export function useGetCompanies(
 export function useGetPublicCompany(
   companyId: string,
   cityOverride?: string | null,
+  /** Store prerendered on the server; the city-resolved copy replaces it. */
+  initialCompany?: Company | null,
 ) {
   const onboardingCity = useOnboardingStore((state) => state.city);
   const city = cityOverride !== undefined ? cityOverride : onboardingCity;
@@ -70,6 +89,8 @@ export function useGetPublicCompany(
         `/shops/${companyId}${city ? `?city=${encodeURIComponent(city)}` : ""}`,
         { schema: CompanySchema },
       ),
+    initialData: initialCompany ?? undefined,
+    initialDataUpdatedAt: initialCompany ? 0 : undefined,
     enabled: Boolean(companyId),
   });
 }

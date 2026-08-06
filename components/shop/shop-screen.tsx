@@ -14,6 +14,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
+import type { Company } from "@/lib/api/schemas/catalog";
+import type { MenuSection } from "@/lib/api/schemas/product";
 import { useGetPublicCompany } from "@/lib/api/services/companies";
 import {
   useGetCompanyMenu,
@@ -37,7 +39,18 @@ function ShopHeroSkeleton() {
   );
 }
 
-export function ShopScreen({ companyId }: { companyId: string }) {
+type ShopScreenProps = {
+  companyId: string;
+  /** Store and menu prerendered on the server — see app/(app)/shops/[slug]. */
+  initialCompany?: Company | null;
+  initialMenu?: MenuSection[] | null;
+};
+
+export function ShopScreen({
+  companyId,
+  initialCompany,
+  initialMenu,
+}: ShopScreenProps) {
   const router = useRouter();
   const [searchVisible, setSearchVisible] = React.useState(false);
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -56,8 +69,8 @@ export function ShopScreen({ companyId }: { companyId: string }) {
     return () => clearTimeout(timer);
   }, [searchQuery]);
 
-  const company = useGetPublicCompany(companyId);
-  const menu = useGetCompanyMenu(companyId);
+  const company = useGetPublicCompany(companyId, undefined, initialCompany);
+  const menu = useGetCompanyMenu(companyId, initialMenu);
   const isSearching = debouncedQuery.length > 0;
 
   // Only queried while a search is actually running — the whole menu already

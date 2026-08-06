@@ -7,6 +7,7 @@ import { apiFetch } from "@/lib/api/client";
 import {
   CategoriesGroupSchema,
   CitySchema,
+  type CategoriesGroup,
   type City,
 } from "@/lib/api/schemas/catalog";
 import { getCategoryIcon } from "@/lib/category-icons";
@@ -18,12 +19,15 @@ const ONE_DAY = 1000 * 60 * 60 * 24;
  * background (capped exponential backoff) and refetches on reconnect, so a cold
  * offline load eventually succeeds.
  */
-export function useGetCities() {
+export function useGetCities(initialCities?: City[] | null) {
   return useQuery({
     queryKey: ["cities"],
     queryFn: () =>
       apiFetch("/cities", { schema: z.array(CitySchema).nullish() }),
     select: (data): City[] => data ?? [],
+    // Prerendered on the server for the screens that ask for it; the directory
+    // is cached for a day on both sides, so this needs no immediate refetch.
+    initialData: initialCities ?? undefined,
     staleTime: ONE_DAY,
     refetchOnReconnect: true,
     retry: true,
@@ -32,8 +36,8 @@ export function useGetCities() {
 }
 
 /** City names for the pickers and matchers. Empty array while loading. */
-export function useCityNames(): string[] {
-  const { data } = useGetCities();
+export function useCityNames(initialCities?: City[] | null): string[] {
+  const { data } = useGetCities(initialCities);
   return useMemo(() => (data ?? []).map((city) => city.name), [data]);
 }
 
@@ -49,13 +53,19 @@ export type CategoryChip = {
  * Category verticals for the home rail, explore chips and lobby bubbles. The API
  * groups categories by vertical; the UI only ever shows the vertical itself.
  */
-export function useGetCategories() {
+export function useGetCategories(initialGroups?: CategoriesGroup[] | null) {
   return useQuery({
     queryKey: ["categories"],
     queryFn: () =>
       apiFetch("/categories/grouped", {
         schema: z.array(CategoriesGroupSchema).nullish(),
       }),
+    // Server-rendered groups come through as the raw API shape, so `select`
+    // below still owns the mapping to chips — a Lucide component can't cross
+    // the server/client boundary. Marked stale on arrival so the client
+    // revalidates in the background without ever showing a spinner.
+    initialData: initialGroups ?? undefined,
+    initialDataUpdatedAt: initialGroups ? 0 : undefined,
     select: (data): CategoryChip[] =>
       (data ?? []).map((group) => ({
         id: group.vertical.toLowerCase(),

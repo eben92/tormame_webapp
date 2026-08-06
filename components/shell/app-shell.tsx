@@ -21,9 +21,25 @@ const TABS = [
   { href: "/profile", label: STRINGS.tabs.profile, Icon: User },
 ] as const;
 
+const DESKTOP_TABS = TABS.filter((tab) => tab.href !== "/home");
+
 function isActiveTab(pathname: string, href: string) {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
+
+const desktopLinkClass = (active: boolean) =>
+  cn(
+    "flex min-h-12 items-center gap-2 rounded-full px-4 font-sans text-sm font-medium",
+    focusRing,
+    active ? "bg-primary-soft text-primary" : "text-body hover:bg-muted",
+  );
+
+/**
+ * Reading the pathname is the one thing in this shell that can't be prerendered
+ * for a route with dynamic params, so every component that needs it sits behind
+ * its own `<Suspense>`. The rest of the frame — header, search, basket — is in
+ * the static shell and paints before any of this resolves.
+ */
 
 /** Fixed bottom tab bar — the mobile app's primary navigation, 64px + safe area. */
 function TabBar() {
@@ -34,43 +50,86 @@ function TabBar() {
   if (!TABS.some((tab) => isActiveTab(pathname, tab.href))) return null;
 
   return (
-    <nav
-      aria-label="Primary"
-      className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card pb-safe md:hidden"
-    >
-      <ul className="flex h-16 items-stretch">
-        {TABS.map(({ href, label, Icon }) => {
-          const active = isActiveTab(pathname, href);
-          return (
-            <li key={href} className="flex-1">
-              <Link
-                href={href}
-                aria-current={active ? "page" : undefined}
-                className={cn(
-                  "flex h-full min-h-12 flex-col items-center justify-center gap-1 pt-2",
-                  focusRing,
-                  active ? "text-primary" : "text-muted-foreground",
-                )}
-              >
-                <Icon
-                  size={20}
-                  className={active ? "fill-primary/15" : undefined}
-                  aria-hidden
-                />
-                <span className="font-sans text-xs font-medium">{label}</span>
-              </Link>
-            </li>
-          );
-        })}
-      </ul>
-    </nav>
+    <>
+      {/* Holds the height the fixed bar covers so the last row of content can
+          be scrolled clear of it. Same boundary as the bar: a route that has
+          no tab bar gets neither the bar nor the gap. */}
+      <div className="h-16 shrink-0 md:hidden" aria-hidden />
+      <nav
+        aria-label="Primary"
+        className="fixed inset-x-0 bottom-0 z-40 border-t border-border bg-card pb-safe md:hidden"
+      >
+        <ul className="flex h-16 items-stretch">
+          {TABS.map(({ href, label, Icon }) => {
+            const active = isActiveTab(pathname, href);
+            return (
+              <li key={href} className="flex-1">
+                <Link
+                  href={href}
+                  aria-current={active ? "page" : undefined}
+                  className={cn(
+                    "flex h-full min-h-12 flex-col items-center justify-center gap-1 pt-2",
+                    focusRing,
+                    active ? "text-primary" : "text-muted-foreground",
+                  )}
+                >
+                  <Icon
+                    size={20}
+                    className={active ? "fill-primary/15" : undefined}
+                    aria-hidden
+                  />
+                  <span className="font-sans text-xs font-medium">{label}</span>
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
+      </nav>
+    </>
+  );
+}
+
+/** Desktop nav links, highlighted for the current route. */
+function DesktopNavLinks() {
+  const pathname = usePathname();
+
+  return (
+    <>
+      {DESKTOP_TABS.map(({ href, label, Icon }) => {
+        const active = isActiveTab(pathname, href);
+        return (
+          <Link
+            key={href}
+            href={href}
+            aria-current={active ? "page" : undefined}
+            className={desktopLinkClass(active)}
+          >
+            <Icon size={18} aria-hidden />
+            {label}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
+/** Same links, same box, no highlight — what the shell shows until the URL resolves. */
+function DesktopNavLinksFallback() {
+  return (
+    <>
+      {DESKTOP_TABS.map(({ href, label, Icon }) => (
+        <Link key={href} href={href} className={desktopLinkClass(false)}>
+          <Icon size={18} aria-hidden />
+          {label}
+        </Link>
+      ))}
+    </>
   );
 }
 
 /** Sticky marketplace header — desktop's replacement for the tab bar. */
 function DesktopHeader() {
   const router = useRouter();
-  const pathname = usePathname();
   const user = useUserStore((state) => state.user);
   const [query, setQuery] = React.useState("");
 
@@ -112,28 +171,9 @@ function DesktopHeader() {
         </form>
 
         <nav aria-label="Primary" className="flex shrink-0 items-center gap-1">
-          {TABS.filter((tab) => tab.href !== "/home").map(
-            ({ href, label, Icon }) => {
-              const active = isActiveTab(pathname, href);
-              return (
-                <Link
-                  key={href}
-                  href={href}
-                  aria-current={active ? "page" : undefined}
-                  className={cn(
-                    "flex min-h-12 items-center gap-2 rounded-full px-4 font-sans text-sm font-medium",
-                    focusRing,
-                    active
-                      ? "bg-primary-soft text-primary"
-                      : "text-body hover:bg-muted",
-                  )}
-                >
-                  <Icon size={18} aria-hidden />
-                  {label}
-                </Link>
-              );
-            },
-          )}
+          <React.Suspense fallback={<DesktopNavLinksFallback />}>
+            <DesktopNavLinks />
+          </React.Suspense>
           {!user ? (
             <Button size="sm" onClick={() => router.push("/auth/signin")}>
               {STRINGS.lobby.signIn}
@@ -150,17 +190,16 @@ function DesktopHeader() {
  * tab bar), a sticky marketplace header on desktop.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
-  const pathname = usePathname();
-  const hasTabBar = TABS.some((tab) => isActiveTab(pathname, tab.href));
-
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <DesktopHeader />
-      <div className={cn("flex flex-1 flex-col", hasTabBar && "pb-16 md:pb-0")}>
-        {children}
-      </div>
-      <GlobalCartBar />
-      <TabBar />
+      <div className="flex flex-1 flex-col">{children}</div>
+      <React.Suspense fallback={null}>
+        <GlobalCartBar />
+      </React.Suspense>
+      <React.Suspense fallback={null}>
+        <TabBar />
+      </React.Suspense>
     </div>
   );
 }

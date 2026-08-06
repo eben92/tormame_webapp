@@ -26,7 +26,11 @@ import {
   COMPANIES_PAGE_SIZE,
   useGetCompanies,
 } from "@/lib/api/services/companies";
-import type { Company } from "@/lib/api/schemas/catalog";
+import type {
+  CategoriesGroup,
+  Company,
+  CompanyPage,
+} from "@/lib/api/schemas/catalog";
 import { STRINGS } from "@/lib/strings";
 import { storeImageUrl } from "@/lib/store-image";
 import { deliveryFeeLabel, toTitleCase } from "@/lib/utils";
@@ -105,7 +109,18 @@ function HomePromoSection({ onClick }: { onClick: () => void }) {
   );
 }
 
-export function HomeScreen() {
+type HomeScreenProps = {
+  /** Prerendered on the server so the first paint carries real content. */
+  initialCategories?: CategoriesGroup[] | null;
+  initialPopular?: CompanyPage | null;
+  initialTrending?: CompanyPage | null;
+};
+
+export function HomeScreen({
+  initialCategories,
+  initialPopular,
+  initialTrending,
+}: HomeScreenProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const category = searchParams.get("category") ?? undefined;
@@ -115,7 +130,7 @@ export function HomeScreen() {
     data: categories,
     isLoading: isCategoriesLoading,
     refetch: refetchCategories,
-  } = useGetCategories();
+  } = useGetCategories(initialCategories);
 
   // The category view uses one vertical-scoped query; the default view uses two
   // server-sorted queries whose first page is shared with the See-all screens.
@@ -125,11 +140,11 @@ export function HomeScreen() {
   );
   const popularQuery = useGetCompanies(
     { sort: "popular", limit: COMPANIES_PAGE_SIZE },
-    { enabled: !isCategoryActive },
+    { enabled: !isCategoryActive, initialPage: initialPopular },
   );
   const trendingQuery = useGetCompanies(
     { sort: "trending", limit: COMPANIES_PAGE_SIZE },
-    { enabled: !isCategoryActive },
+    { enabled: !isCategoryActive, initialPage: initialTrending },
   );
 
   const stores = categoryQuery.data ?? [];
@@ -170,10 +185,12 @@ export function HomeScreen() {
     featuredStores.length === 0 &&
     trendingStores.length === 0;
 
-  const openStore = (storeId: string) => router.push(`/shops/${storeId}`);
-
   return (
     <div className="flex flex-1 flex-col">
+      <Text as="h1" variant="h1" className="sr-only">
+        {STRINGS.home.pageHeading}
+      </Text>
+
       <div className="flex flex-col gap-3 bg-background pt-safe pb-3 md:hidden">
         <AddressButton />
 
@@ -246,7 +263,7 @@ export function HomeScreen() {
                       <StoreCard
                         {...companyToCard(store)}
                         variant="landscape"
-                        onClick={() => openStore(store.id)}
+                        href={`/shops/${store.id}`}
                       />
                     </li>
                   ))}
@@ -307,7 +324,7 @@ export function HomeScreen() {
                       <SectionHeader
                         title={STRINGS.home.popularTitle}
                         subtitle={STRINGS.home.popularSubtitle}
-                        onSeeAll={() => router.push("/collection/popular")}
+                        seeAllHref="/collection/popular"
                       />
                     </div>
                     {popularQuery.isError ? (
@@ -322,7 +339,7 @@ export function HomeScreen() {
                             <StoreCard
                               {...companyToCard(store)}
                               priority={index === 0}
-                              onClick={() => openStore(store.id)}
+                              href={`/shops/${store.id}`}
                             />
                           </li>
                         ))}
@@ -337,7 +354,7 @@ export function HomeScreen() {
                       <SectionHeader
                         title={STRINGS.home.trendingTitle}
                         subtitle={STRINGS.home.trendingSubtitle}
-                        onSeeAll={() => router.push("/collection/trending")}
+                        seeAllHref="/collection/trending"
                       />
                     </div>
                     {trendingQuery.isError ? (
@@ -351,7 +368,7 @@ export function HomeScreen() {
                           <li key={store.id} className="md:w-full">
                             <TrendingCard
                               {...companyToCard(store)}
-                              onClick={() => openStore(store.id)}
+                              href={`/shops/${store.id}`}
                             />
                           </li>
                         ))}

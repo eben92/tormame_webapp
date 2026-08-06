@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { paginated } from "@/lib/api/schemas/common";
 
 export const CitySchema = z.object({
   id: z.string(),
@@ -63,6 +64,11 @@ export const CompanySchema = z.object({
 });
 
 export type Company = z.infer<typeof CompanySchema>;
+
+/** One page of `/companies`, shared by the client hook and the server reader. */
+export const CompanyPageSchema = paginated(CompanySchema);
+
+export type CompanyPage = z.infer<typeof CompanyPageSchema>;
 
 export const BranchSchema = z.object({
   id: z.string(),

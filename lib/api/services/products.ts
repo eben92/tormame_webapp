@@ -62,7 +62,11 @@ export function useGetProductDetail(productId: string | null) {
  * server. Unpaginated by design: the store page needs the full section list to
  * drive its sticky category bar.
  */
-export function useGetCompanyMenu(companyId: string) {
+export function useGetCompanyMenu(
+  companyId: string,
+  /** Menu prerendered on the server, so the store page paints with its items. */
+  initialMenu?: MenuSection[] | null,
+) {
   return useQuery({
     queryKey: ["company-menu", companyId],
     queryFn: () =>
@@ -70,6 +74,8 @@ export function useGetCompanyMenu(companyId: string) {
         schema: z.array(MenuSectionSchema).nullish(),
       }),
     select: (data): MenuSection[] => data ?? [],
+    initialData: initialMenu ?? undefined,
+    initialDataUpdatedAt: initialMenu ? 0 : undefined,
     enabled: Boolean(companyId),
   });
 }

@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from "next";
 import { Bricolage_Grotesque, DM_Sans } from "next/font/google";
 import { Providers } from "@/components/providers";
+import { ENV } from "@/lib/env";
 import "./globals.css";
 
 const bricolage = Bricolage_Grotesque({
@@ -15,15 +16,28 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
+const TITLE = "TORMAME — Food & groceries delivered fast";
+const DESCRIPTION =
+  "Order food, groceries and more from restaurants and shops near you, delivered fast.";
+
 export const metadata: Metadata = {
-  title: {
-    default: "TORMAME — Food & groceries delivered fast",
-    template: "%s · TORMAME",
-  },
-  description:
-    "Order food, groceries and more from restaurants and shops near you, delivered fast.",
+  // Lets every page declare canonical and Open Graph URLs as paths.
+  metadataBase: new URL(ENV.SITE_URL),
+  title: { default: TITLE, template: "%s · TORMAME" },
+  description: DESCRIPTION,
   applicationName: "TORMAME",
   formatDetection: { telephone: false },
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    siteName: "TORMAME",
+    title: TITLE,
+    description: DESCRIPTION,
+    url: "/",
+    locale: "en_GH",
+  },
+  twitter: { card: "summary_large_image", title: TITLE, description: DESCRIPTION },
+  robots: { index: true, follow: true },
 };
 
 export const viewport: Viewport = {

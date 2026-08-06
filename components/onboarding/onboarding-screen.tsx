@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/phone-input";
 import { Text } from "@/components/ui/text";
 import { focusRing } from "@/components/ui/pressable";
+import type { City } from "@/lib/api/schemas/catalog";
 import { useCityNames, useGetCities } from "@/lib/api/services/catalog";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
@@ -63,12 +64,14 @@ function StepHeader({ title, subtitle }: { title: string; subtitle: string }) {
 function CityWheel({
   value,
   onChange,
+  initialCities,
 }: {
   value: string;
   onChange: (city: string) => void;
+  initialCities?: City[] | null;
 }) {
-  const cities = useCityNames();
-  const { isLoading } = useGetCities();
+  const cities = useCityNames(initialCities);
+  const { isLoading } = useGetCities(initialCities);
   const activeRef = React.useRef<HTMLButtonElement>(null);
 
   React.useEffect(() => {
@@ -125,7 +128,12 @@ function CityWheel({
   );
 }
 
-export function OnboardingScreen() {
+export function OnboardingScreen({
+  /** City directory prerendered on the server — the wheel never starts empty. */
+  initialCities,
+}: {
+  initialCities?: City[] | null;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const isCityOnly = searchParams.get("mode") === "city-only";
@@ -136,7 +144,7 @@ export function OnboardingScreen() {
     (state) => state.completeOnboarding,
   );
 
-  const cityNames = useCityNames();
+  const cityNames = useCityNames(initialCities);
   const [step, setStep] = React.useState<Step>(0);
   const [selectedCity, setSelectedCity] = React.useState("");
   const [name, setName] = React.useState("");
@@ -213,7 +221,11 @@ export function OnboardingScreen() {
               title={STRINGS.onboarding.town.title}
               subtitle={STRINGS.onboarding.town.subtitle}
             />
-            <CityWheel value={effectiveCity} onChange={setSelectedCity} />
+            <CityWheel
+              value={effectiveCity}
+              onChange={setSelectedCity}
+              initialCities={initialCities}
+            />
             <div className="mt-auto">
               <Button
                 size="lg"

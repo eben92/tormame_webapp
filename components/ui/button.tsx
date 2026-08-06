@@ -83,7 +83,9 @@ function Button({
       {...props}
     >
       {isLoading ? <Loader2 className="animate-spin" aria-hidden /> : null}
-      {children}
+      {/* Slot needs to be told which child to merge into when the button also
+          renders a spinner; without this, `asChild` throws on two children. */}
+      {asChild ? <Slot.Slottable>{children}</Slot.Slottable> : children}
     </Comp>
   );
 }

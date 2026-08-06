@@ -19,6 +19,7 @@ import { Text } from "@/components/ui/text";
 import { EmptyState, ErrorState } from "@/components/ui/states";
 import { focusRing } from "@/components/ui/pressable";
 import type { SearchResultItem } from "@/lib/api/schemas/product";
+import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import { useGetCategories } from "@/lib/api/services/catalog";
 import { useGlobalSearch } from "@/lib/api/services/search";
 import { splitRailProducts } from "@/lib/search-rail";
@@ -90,7 +91,12 @@ function SearchResultsSkeleton() {
   );
 }
 
-export function ExploreScreen() {
+export function ExploreScreen({
+  /** Category chips prerendered on the server. */
+  initialCategories,
+}: {
+  initialCategories?: CategoriesGroup[] | null;
+}) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialQuery = searchParams.get("q") ?? "";
@@ -110,7 +116,7 @@ export function ExploreScreen() {
     return () => clearTimeout(timer);
   }, [query]);
 
-  const { data: categories } = useGetCategories();
+  const { data: categories } = useGetCategories(initialCategories);
   const allCategories = categories ?? [];
   const hasMultipleCategories = allCategories.length > 1;
 

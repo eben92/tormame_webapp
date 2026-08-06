@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { EmptyState, ErrorState, SkeletonCard } from "@/components/ui/states";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
-import type { Company } from "@/lib/api/schemas/catalog";
+import type { Company, CompanyPage } from "@/lib/api/schemas/catalog";
 import {
   COMPANIES_PAGE_SIZE,
   useGetCompanies,
@@ -35,9 +35,19 @@ function companyToCard(company: Company) {
 }
 
 /** See-all list for a home rail. Shares the rail's first page via the same query key. */
-export function CollectionScreen({ sort }: { sort: CollectionSort }) {
+export function CollectionScreen({
+  sort,
+  initialPage,
+}: {
+  sort: CollectionSort;
+  /** First page prerendered on the server; see app/(app)/collection/[sort]. */
+  initialPage?: CompanyPage | null;
+}) {
   const router = useRouter();
-  const query = useGetCompanies({ sort, limit: COMPANIES_PAGE_SIZE });
+  const query = useGetCompanies(
+    { sort, limit: COMPANIES_PAGE_SIZE },
+    { initialPage },
+  );
   const stores = query.data ?? [];
 
   return (
@@ -55,7 +65,9 @@ export function CollectionScreen({ sort }: { sort: CollectionSort }) {
         >
           <ArrowLeft size={20} aria-hidden />
         </button>
-        <Text variant="h3">{collectionTitle(sort)}</Text>
+        <Text as="h1" variant="h3">
+          {collectionTitle(sort)}
+        </Text>
       </div>
 
       <div className="mx-auto w-full max-w-[1280px] flex-1 px-4 pb-10 md:px-8">
@@ -84,7 +96,7 @@ export function CollectionScreen({ sort }: { sort: CollectionSort }) {
                   <StoreCard
                     {...companyToCard(store)}
                     variant="landscape"
-                    onClick={() => router.push(`/shops/${store.id}`)}
+                    href={`/shops/${store.id}`}
                   />
                 </li>
               ))}

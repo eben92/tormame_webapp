@@ -1,0 +1,27 @@
+import type { MetadataRoute } from "next";
+import { getCompaniesPage } from "@/lib/api/server/catalog";
+import { ENV } from "@/lib/env";
+
+const STATIC_ROUTES = ["/lobby", "/home", "/explore", "/collection/popular", "/collection/trending"];
+
+/**
+ * Public surface only. Everything behind a session (orders, checkout, profile)
+ * is excluded here and disallowed in robots.ts — it would 404 for a crawler
+ * anyway, since the session lives in the browser.
+ */
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
+  const stores = await getCompaniesPage({ limit: 100 });
+
+  return [
+    ...STATIC_ROUTES.map((route) => ({
+      url: `${ENV.SITE_URL}${route}`,
+      changeFrequency: "daily" as const,
+      priority: route === "/lobby" ? 1 : 0.8,
+    })),
+    ...(stores?.data ?? []).map((store) => ({
+      url: `${ENV.SITE_URL}/shops/${store.id}`,
+      changeFrequency: "daily" as const,
+      priority: 0.6,
+    })),
+  ];
+}

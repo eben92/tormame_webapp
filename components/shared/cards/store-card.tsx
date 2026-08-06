@@ -1,6 +1,8 @@
 "use client";
 
+import type * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { Clock, Star, Truck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Text } from "@/components/ui/text";
@@ -21,6 +23,12 @@ export type StoreCardData = {
 };
 
 type StoreCardProps = StoreCardData & {
+  /**
+   * Destination for the card. Prefer this over `onClick`: a real anchor is
+   * prefetched by the router, crawlable, and opens in a new tab on
+   * middle-click — none of which a button does.
+   */
+  href?: string;
   onClick?: () => void;
   variant?: "portrait" | "landscape";
   className?: string;
@@ -29,6 +37,35 @@ type StoreCardProps = StoreCardData & {
 };
 
 const FALLBACK_IMAGE = "/auth.webp";
+
+/** An anchor when the card navigates, a button when it only acts. */
+function CardShell({
+  href,
+  onClick,
+  label,
+  className,
+  children,
+}: {
+  href?: string;
+  onClick?: () => void;
+  label: string;
+  className: string;
+  children: React.ReactNode;
+}) {
+  if (href) {
+    return (
+      <Link href={href} aria-label={label} onClick={onClick} className={className}>
+        {children}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} aria-label={label} className={className}>
+      {children}
+    </button>
+  );
+}
 
 /** Delivery time / fee only render when the API actually provides them. */
 function StoreMeta({
@@ -69,6 +106,7 @@ export function StoreCard({
   imageUrl,
   isFeatured,
   promoPercent,
+  href,
   onClick,
   className,
   priority = false,
@@ -78,10 +116,10 @@ export function StoreCard({
 
   if (variant === "landscape") {
     return (
-      <button
-        type="button"
+      <CardShell
+        href={href}
         onClick={onClick}
-        aria-label={name}
+        label={name}
         className={cn(
           "flex w-full items-center gap-3 rounded-card border border-border bg-card p-3 text-left",
           "md:hover:shadow-e2",
@@ -129,15 +167,15 @@ export function StoreCard({
             <StoreMeta deliveryTime={deliveryTime} deliveryFee={deliveryFee} />
           </span>
         </span>
-      </button>
+      </CardShell>
     );
   }
 
   return (
-    <button
-      type="button"
+    <CardShell
+      href={href}
       onClick={onClick}
-      aria-label={name}
+      label={name}
       className={cn(
         "group flex w-[196px] shrink-0 flex-col text-left md:w-full",
         pressableScale,
@@ -180,6 +218,6 @@ export function StoreCard({
         ) : null}
         <StoreMeta deliveryTime={deliveryTime} deliveryFee={deliveryFee} />
       </span>
-    </button>
+    </CardShell>
   );
 }

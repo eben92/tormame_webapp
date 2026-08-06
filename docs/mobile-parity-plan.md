@@ -392,3 +392,48 @@ Live API: two sorted `GET /companies` queries (popular + trending, 60s staleTime
 ### `/lobby` — API
 
 Live API: `GET /categories/grouped` drives the bubbles; `GET /cities` drives the city picker; guest address saves to the device and the pill reflects it after reload. Address form runs RHF + Zod with the mobile's messages. Console clean (an `aria-hidden`/focus warning was fixed by making the pill the sheet's own trigger and enabling `autoFocus`). `pnpm build`, `pnpm lint`, `tsc --noEmit` all clean.
+
+---
+
+## Rendering architecture (Next.js 16 Cache Components)
+
+The port originally rendered everything in the browser: HTML shipped empty, React booted, React Query fetched, content appeared. That is now inverted for every page whose data is public.
+
+`next.config.ts` enables two flags:
+
+- **`cacheComponents: true`** — Partial Prerendering becomes the default. Each route ships a static shell (chrome + skeleton) that a CDN can serve, and the rest streams into the same response.
+- **`partialPrefetching: true`** — a `<Link>` prefetches its destination's shared App Shell, so a rail of twenty store cards costs one prefetch instead of twenty.
+
+### What the server fetches
+
+`lib/api/server/` holds a second, deliberately small API layer:
+
+- `fetch.ts` — `serverFetch`, the same envelope unwrapping and Zod validation as the browser client, minus the bearer token. It is `server-only`, so it can never be pulled into the client bundle. `tolerant()` wraps every read: if staging is down, the page renders its skeleton and the client query takes over, exactly as before.
+- `catalog.ts` — `use cache` readers with an explicit `cacheLife` and `cacheTag` each: cities (`days`), category groups (`hours`), company lists / shop / menu (`minutes`). `minutes` is the shortest profile whose 5-minute `stale` still lets the result ride along in a prefetch.
+- `request-time.ts` — `requestTime()`, a named `connection()`. See "Why request time" below.
+
+Server data is handed to the existing screens as `initialData` for their React Query hooks, so the hooks stay the single source of truth: the list paints from the server's copy, then revalidates in the background. Nothing was rewritten into a Server Component.
+
+### Why request time, not build time
+
+React Query reads `Date.now()` while rendering. A build-time prerender rejects unstable values, so a screen that uses it can never be baked into static HTML — it gets silently left behind its Suspense fallback, and the shipped page is a skeleton until JavaScript runs. That is the opposite of the goal.
+
+`requestTime()` moves those subtrees to request time. The shell is still static and instant; the real markup now streams into the same response, which is what a crawler and a slow phone actually read. Verified: `/lobby`, `/home`, `/explore`, `/collection/[sort]`, `/onboarding` and `/shops/[slug]` all ship rendered content, each with exactly one `<h1>`.
+
+### No city cookie
+
+`/companies` returns the same stores regardless of `city`; the parameter only resolves a store's delivery fee. So the server renders the list without a city and the client's query — which does know the city, from `localStorage` — fills the fees in on its first revalidation. No mirroring of client state into cookies.
+
+### What stays client-only, and why
+
+`/orders`, `/order-details/[id]`, `/checkout`, `/profile`, `/addresses`, `/personal-info` and `/settings` need the customer's bearer token, which lives in `localStorage` (decision A2, mirroring the mobile app). The server cannot read it, so it cannot fetch these — `/me/*` and `/orders/*` answer 401 without it. Those routes still get a prerendered shell so navigation feels instant, and the client keeps its existing polling. **Moving the session to an httpOnly cookie is the only thing that would unlock server-rendering them** — a real change with real security upside, but it reverses A2, so it is your call rather than mine.
+
+The desktop header's address sheet is the one overlay that survives a navigation with its state, because it lives in the layout rather than a route. Route-owned sheets close themselves (a `useLayoutEffect` cleanup in `ResponsiveSheet`, needed because Cache Components keeps a route mounted-but-hidden via `<Activity>` instead of unmounting it).
+
+### SEO
+
+- `metadataBase`, Open Graph and Twitter defaults in the root layout; a canonical URL on every public route.
+- `/shops/[slug]` builds its title, description and OG image from the store itself, and emits `Restaurant`/`Store` JSON-LD — rating included only when the API actually returned one.
+- `app/sitemap.ts` lists the public routes plus every store; `app/robots.ts` disallows the session-scoped ones.
+- Store cards are real `<a>` elements now, not buttons: crawlable, prefetched, middle-clickable. Same for "See all".
+- Exactly one `<h1>` per page. `/home` has no visible page title in the mobile design, so its heading is screen-reader-only rather than invented.

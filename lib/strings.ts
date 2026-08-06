@@ -165,6 +165,9 @@ export const STRINGS = {
     }),
   },
   home: {
+    /* Web-only. A page needs one h1; the native screen has no such heading, and
+       showing one here would break parity, so it is read out but not drawn. */
+    pageHeading: 'Restaurants, shops and events near you',
     chooseAddress: 'Choose your delivery address',
     addressHint: 'Tap to change your delivery address',
     searchPlaceholder: 'Search restaurants, shops…',

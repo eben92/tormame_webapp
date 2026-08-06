@@ -1,6 +1,7 @@
 "use client";
 
 import Image from "next/image";
+import Link from "next/link";
 import { Clock, Star, Truck } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
@@ -19,6 +20,8 @@ export type TrendingCardData = {
 };
 
 type TrendingCardProps = TrendingCardData & {
+  /** Real anchor so the rail's destinations are prefetched and crawlable. */
+  href?: string;
   onClick?: () => void;
   className?: string;
 };
@@ -77,23 +80,20 @@ export function TrendingCard({
   deliveryFee,
   promoPercent,
   imageUrl,
+  href,
   onClick,
   className,
 }: TrendingCardProps) {
   const hasPromo = promoPercent != null && promoPercent > 0;
+  const shellClassName = cn(
+    "group flex w-[78vw] shrink-0 snap-start flex-col text-left md:w-full",
+    pressableScale,
+    focusRing,
+    className,
+  );
 
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      aria-label={name}
-      className={cn(
-        "group flex w-[78vw] shrink-0 snap-start flex-col text-left md:w-full",
-        pressableScale,
-        focusRing,
-        className,
-      )}
-    >
+  const content = (
+    <>
       <span className="relative block aspect-video w-full overflow-hidden rounded-image bg-muted">
         <Image
           src={imageUrl || "/auth.webp"}
@@ -119,6 +119,20 @@ export function TrendingCard({
           deliveryFee={deliveryFee}
         />
       </span>
+    </>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} aria-label={name} onClick={onClick} className={shellClassName}>
+        {content}
+      </Link>
+    );
+  }
+
+  return (
+    <button type="button" onClick={onClick} aria-label={name} className={shellClassName}>
+      {content}
     </button>
   );
 }

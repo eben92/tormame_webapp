@@ -54,6 +54,15 @@ export function ResponsiveSheet({
 }: ResponsiveSheetProps) {
   const isDesktop = useIsDesktop();
 
+  // Cache Components keeps a route mounted (hidden) when you navigate away, so
+  // without this an open sheet would still be open on the way back. A sheet is
+  // a transient interaction, not view state worth restoring.
+  const closeRef = React.useRef(onOpenChange);
+  React.useEffect(() => {
+    closeRef.current = onOpenChange;
+  }, [onOpenChange]);
+  React.useLayoutEffect(() => () => closeRef.current(false), []);
+
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
