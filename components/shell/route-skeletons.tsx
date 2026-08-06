@@ -17,11 +17,23 @@ function CardSkeleton() {
   );
 }
 
+/** Holds a rail of `FilterChip`s — explore and the shop page's category bar. */
 function ChipRailSkeleton() {
   return (
     <div className="flex gap-2 overflow-hidden px-4 md:px-0">
       {[0, 1, 2, 3, 4].map((index) => (
-        <Skeleton key={index} className="h-9 w-24 shrink-0 rounded-full" />
+        <Skeleton key={index} className="h-12 w-24 shrink-0 rounded-full" />
+      ))}
+    </div>
+  );
+}
+
+/** Home's rail is taller: every chip carries the lobby's category artwork. */
+function CategoryRailSkeleton() {
+  return (
+    <div className="flex gap-2 overflow-hidden px-4 py-1">
+      {[0, 1, 2, 3, 4].map((index) => (
+        <Skeleton key={index} className="h-14.5 w-28 shrink-0 rounded-full" />
       ))}
     </div>
   );
@@ -30,17 +42,18 @@ function ChipRailSkeleton() {
 export function HomeSkeleton() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-3 pb-3 md:hidden">
+      <div className="flex flex-col gap-3 pb-2 md:hidden">
         <div className="px-4 pt-3">
           <Skeleton className="h-6 w-40" />
         </div>
         <Skeleton className="mx-4 h-12 rounded-full" />
-        <ChipRailSkeleton />
       </div>
 
-      <div className="hidden px-8 pt-6 pb-2 md:block">
-        <div className="mx-auto w-full max-w-[1280px]">
-          <ChipRailSkeleton />
+      {/* Same single mount and same gutters as `HomeScreen`, or the rail moves
+          when the real one replaces this. */}
+      <div className="pb-2 md:pt-5 md:pb-1">
+        <div className="mx-auto w-full max-w-[1280px] md:px-4">
+          <CategoryRailSkeleton />
         </div>
       </div>
 
@@ -117,19 +130,31 @@ export function ShopSkeleton() {
   );
 }
 
-/** The lobby is a full-bleed brand screen; its shell keeps the gradient. */
+/**
+ * The lobby is a full-bleed brand screen; its shell keeps the canvas. Painted
+ * from the same `--hero-*` tokens as `Ambience`, not from `--primary`, which
+ * inverts to a mint the real hero never shows — the landing page flashed it.
+ */
 export function LobbySkeleton() {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <div className="flex flex-col gap-3 rounded-b-sheet bg-linear-to-br from-primary to-primary-pressed px-4 pt-safe pb-7">
-        <div className="flex items-center justify-between pt-4">
-          <Skeleton className="h-8 w-40 bg-white/20" />
-          <Skeleton className="h-8 w-20 rounded-full bg-white/20" />
+      <div className="relative overflow-hidden rounded-b-sheet px-4 pt-safe pb-7">
+        <div aria-hidden className="pointer-events-none absolute inset-0">
+          <div className="absolute inset-0 bg-linear-to-br from-(--hero-gradient-from) via-(--hero-gradient-via) to-(--hero-gradient-to)" />
+          <div className="absolute -top-24 -left-20 size-72 rounded-full bg-(--hero-glow-cool) blur-3xl" />
+          <div className="absolute -right-24 -bottom-28 size-80 rounded-full bg-(--hero-glow-warm) blur-3xl" />
         </div>
-        <Skeleton className="mt-2 h-6 w-32 rounded-full bg-white/20" />
-        <Skeleton className="h-10 w-3/4 bg-white/20" />
-        <Skeleton className="h-4 w-1/2 bg-white/20" />
-        <Skeleton className="mt-1 h-12 w-full rounded-full bg-white/20" />
+
+        <div className="relative flex flex-col gap-3">
+          <div className="flex items-center justify-between pt-4">
+            <Skeleton className="h-8 w-40 bg-white/20" />
+            <Skeleton className="h-8 w-20 rounded-full bg-white/20" />
+          </div>
+          <Skeleton className="mt-2 h-6 w-32 rounded-full bg-white/20" />
+          <Skeleton className="h-10 w-3/4 bg-white/20" />
+          <Skeleton className="h-4 w-1/2 bg-white/20" />
+          <Skeleton className="mt-1 h-12 w-full rounded-full bg-white/20" />
+        </div>
       </div>
       <div className="flex flex-col gap-2 px-4 pt-6">
         <Skeleton className="h-6 w-56" />

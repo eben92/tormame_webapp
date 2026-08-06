@@ -85,7 +85,7 @@ export function AuthShell({
           {children}
         </div>
 
-        <div className="sticky bottom-0 flex flex-col gap-1 border-t border-border bg-background px-4 pt-3 pb-4 pb-safe md:static md:rounded-b-card md:border-t-0 md:bg-transparent md:px-6 md:pb-6">
+        <div className="sticky bottom-0 flex flex-col gap-1 border-t border-border bg-background px-4 pt-3 pb-safe-gutter md:static md:rounded-b-card md:border-t-0 md:bg-transparent md:px-6 md:pb-6">
           {footer}
         </div>
       </div>

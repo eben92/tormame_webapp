@@ -136,7 +136,6 @@ export const STRINGS = {
     },
   },
   lobby: {
-    badge: '🚀 Fast delivery in Kwahu',
     headline: 'Food. Groceries.\nDelivered fast.',
     subtitle: 'Restaurants · Shops · Events · All in one app',
     changeLocation: 'Change location',
@@ -156,10 +155,15 @@ export const STRINGS = {
      has no equivalent surface. */
   footer: {
     tagline:
-      'Food, groceries, pharmacy and more — delivered across Kwahu and beyond.',
+      'Food, groceries, pharmacy and more — delivered to your door.',
     getTheApp: 'Get the app',
     appStore: 'Download on the App Store',
     playStore: 'Get it on Google Play',
+    /* Shown on a store badge whose listing URL is not configured yet: the app
+       is announced, but the badge is inert rather than a link to nowhere. */
+    comingSoon: 'Coming soon',
+    appStoreSoon: 'TORMAME for iPhone — coming soon to the App Store',
+    playStoreSoon: 'TORMAME for Android — coming soon to Google Play',
     company: 'Company',
     home: 'Browse stores',
     help: 'Help & support',
@@ -322,11 +326,9 @@ export const STRINGS = {
     serviceFee: 'Service fee',
     deliveryFee: 'Delivery fee',
     total: 'Total',
-    noChangeAcknowledgement: 'I understand the courier may not have change.',
     placeOrder: (total: string) => `Place order — ${total}`,
     placingOrder: 'Placing your order…',
     missingAddressToast: 'Add a delivery address first',
-    missingConsentToast: 'Tick the courier-change box to continue',
     pickupFromTitle: 'Pick up from',
     fulfilledByTitle: 'Fulfilled by',
     changeBranch: 'Change',

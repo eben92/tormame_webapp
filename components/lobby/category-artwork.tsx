@@ -1,3 +1,6 @@
+"use client";
+
+import * as React from "react";
 import type { CategoryArtKey } from "@/lib/category-art";
 
 /**
@@ -14,6 +17,18 @@ import type { CategoryArtKey } from "@/lib/category-art";
  */
 
 type ArtProps = { className?: string };
+
+/**
+ * Gradients are painted by document-wide id, so two copies of one drawing both
+ * resolve to whichever `<defs>` comes first — and when that first copy sits in
+ * a hidden subtree, the visible one paints unfilled. Scoping the ids per
+ * instance removes the hazard entirely. React's ids carry colons, which a
+ * `url(#…)` fragment will not resolve, so they are stripped.
+ */
+function useArtId() {
+  const scope = React.useId().replace(/[^a-zA-Z0-9]/g, "");
+  return React.useCallback((name: string) => `${scope}-${name}`, [scope]);
+}
 
 function frame(className?: string) {
   return {
@@ -33,22 +48,23 @@ export interface ArtPartTween {
 }
 
 function FoodArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-food-bun-top" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("food-bun-top")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#F6C177" />
           <stop offset="1" stopColor="#D9913C" />
         </linearGradient>
-        <linearGradient id="art-food-bun-base" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("food-bun-base")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#E8A954" />
           <stop offset="1" stopColor="#B9752B" />
         </linearGradient>
-        <linearGradient id="art-food-patty" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("food-patty")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#8A5333" />
           <stop offset="1" stopColor="#5C3220" />
         </linearGradient>
-        <radialGradient id="art-food-shine" cx="0.35" cy="0.25" r="0.7">
+        <radialGradient id={id("food-shine")} cx="0.35" cy="0.25" r="0.7">
           <stop offset="0" stopColor="#FFFFFF" stopOpacity="0.55" />
           <stop offset="1" stopColor="#FFFFFF" stopOpacity="0" />
         </radialGradient>
@@ -67,11 +83,11 @@ function FoodArt({ className }: ArtProps) {
       <g data-part="bun-top">
         <path
           d="M18 44c0-16 13.4-26 30-26s30 10 30 26z"
-          fill="url(#art-food-bun-top)"
+          fill={`url(#${id("food-bun-top")})`}
         />
         <path
           d="M18 44c0-16 13.4-26 30-26s30 10 30 26z"
-          fill="url(#art-food-shine)"
+          fill={`url(#${id("food-shine")})`}
         />
         <circle cx="38" cy="30" r="1.7" fill="#FFF3DC" opacity="0.9" />
         <circle cx="52" cy="26" r="1.7" fill="#FFF3DC" opacity="0.9" />
@@ -96,7 +112,7 @@ function FoodArt({ className }: ArtProps) {
           width="62"
           height="11"
           rx="5.5"
-          fill="url(#art-food-patty)"
+          fill={`url(#${id("food-patty")})`}
         />
         <rect
           x="17"
@@ -112,25 +128,26 @@ function FoodArt({ className }: ArtProps) {
       <path
         data-part="bun-base"
         d="M22 64h52a10 10 0 0 1-10 10H32a10 10 0 0 1-10-10z"
-        fill="url(#art-food-bun-base)"
+        fill={`url(#${id("food-bun-base")})`}
       />
     </svg>
   );
 }
 
 function GroceryArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-grocery-bag" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("grocery-bag")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#E8C79A" />
           <stop offset="1" stopColor="#B98A54" />
         </linearGradient>
-        <linearGradient id="art-grocery-apple" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("grocery-apple")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#F2643E" />
           <stop offset="1" stopColor="#C02F1E" />
         </linearGradient>
-        <linearGradient id="art-grocery-bread" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("grocery-bread")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#E3A85C" />
           <stop offset="1" stopColor="#B4762F" />
         </linearGradient>
@@ -158,12 +175,12 @@ function GroceryArt({ className }: ArtProps) {
         width="13"
         height="22"
         rx="6.5"
-        fill="url(#art-grocery-bread)"
+        fill={`url(#${id("grocery-bread")})`}
         transform="rotate(20 51 25)"
       />
 
       <g data-part="apple">
-        <circle cx="36" cy="28" r="9" fill="url(#art-grocery-apple)" />
+        <circle cx="36" cy="28" r="9" fill={`url(#${id("grocery-apple")})`} />
         <path
           d="M36 19c1-3 4-4.5 6.5-3.5-1 3-3.5 4.5-6.5 3.5z"
           fill="#4E8B34"
@@ -173,7 +190,7 @@ function GroceryArt({ className }: ArtProps) {
       <g data-part="bag">
         <path
           d="M22 34h52l-4 40a6 6 0 0 1-6 5H32a6 6 0 0 1-6-5z"
-          fill="url(#art-grocery-bag)"
+          fill={`url(#${id("grocery-bag")})`}
         />
         <path d="M22 34h52l-0.9 9H22.9z" fill="#F1DCBB" />
         <path
@@ -190,18 +207,19 @@ function GroceryArt({ className }: ArtProps) {
 }
 
 function PharmacyArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-pharmacy-top" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("pharmacy-top")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#7FD3F5" />
           <stop offset="1" stopColor="#2E8FC4" />
         </linearGradient>
-        <linearGradient id="art-pharmacy-base" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("pharmacy-base")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FFFFFF" />
           <stop offset="1" stopColor="#D3DEE4" />
         </linearGradient>
-        <linearGradient id="art-pharmacy-cross" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("pharmacy-cross")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#4ED09B" />
           <stop offset="1" stopColor="#17916A" />
         </linearGradient>
@@ -224,11 +242,11 @@ function PharmacyArt({ className }: ArtProps) {
           width="56"
           height="28"
           rx="14"
-          fill="url(#art-pharmacy-base)"
+          fill={`url(#${id("pharmacy-base")})`}
         />
         <path
           d="M34 32h-0.1A14 14 0 0 0 20 46a14 14 0 0 0 14 14h14V32z"
-          fill="url(#art-pharmacy-top)"
+          fill={`url(#${id("pharmacy-top")})`}
         />
         <rect
           x="24"
@@ -242,7 +260,7 @@ function PharmacyArt({ className }: ArtProps) {
       </g>
 
       <g data-part="cross" transform="translate(56 54)">
-        <circle cx="12" cy="12" r="14" fill="url(#art-pharmacy-cross)" />
+        <circle cx="12" cy="12" r="14" fill={`url(#${id("pharmacy-cross")})`} />
         <path d="M9.5 5h5v4.5H19v5h-4.5V19h-5v-4.5H5v-5h4.5z" fill="#FFFFFF" />
       </g>
     </svg>
@@ -250,18 +268,19 @@ function PharmacyArt({ className }: ArtProps) {
 }
 
 function ElectronicsArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-electronics-body" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("electronics-body")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#5C6B7A" />
           <stop offset="1" stopColor="#232C36" />
         </linearGradient>
-        <linearGradient id="art-electronics-screen" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("electronics-screen")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#63E6C0" />
           <stop offset="1" stopColor="#1E88C7" />
         </linearGradient>
-        <linearGradient id="art-electronics-bolt" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("electronics-bolt")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FFE27A" />
           <stop offset="1" stopColor="#F2A33C" />
         </linearGradient>
@@ -284,7 +303,7 @@ function ElectronicsArt({ className }: ArtProps) {
           width="42"
           height="66"
           rx="10"
-          fill="url(#art-electronics-body)"
+          fill={`url(#${id("electronics-body")})`}
         />
         <rect
           data-part="screen"
@@ -293,7 +312,7 @@ function ElectronicsArt({ className }: ArtProps) {
           width="34"
           height="52"
           rx="6"
-          fill="url(#art-electronics-screen)"
+          fill={`url(#${id("electronics-screen")})`}
         />
         <rect
           x="33"
@@ -318,21 +337,22 @@ function ElectronicsArt({ className }: ArtProps) {
       <path
         data-part="bolt"
         d="M62 44l-12 17h8l-3 13 13-18h-8z"
-        fill="url(#art-electronics-bolt)"
+        fill={`url(#${id("electronics-bolt")})`}
       />
     </svg>
   );
 }
 
 function FashionArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-fashion-shirt" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("fashion-shirt")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#8FB8FF" />
           <stop offset="1" stopColor="#3C63C9" />
         </linearGradient>
-        <linearGradient id="art-fashion-sleeve" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("fashion-sleeve")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#7AA5F2" />
           <stop offset="1" stopColor="#2F52AE" />
         </linearGradient>
@@ -351,17 +371,17 @@ function FashionArt({ className }: ArtProps) {
       <path
         data-part="shirt"
         d="M36 18l-22 12 7 14 9-4v38a4 4 0 0 0 4 4h28a4 4 0 0 0 4-4V40l9 4 7-14-22-12z"
-        fill="url(#art-fashion-shirt)"
+        fill={`url(#${id("fashion-shirt")})`}
       />
       <path
         data-part="sleeve-left"
         d="M14 30l22-12 4 6-19 20z"
-        fill="url(#art-fashion-sleeve)"
+        fill={`url(#${id("fashion-sleeve")})`}
       />
       <path
         data-part="sleeve-right"
         d="M82 30L60 18l-4 6 19 20z"
-        fill="url(#art-fashion-sleeve)"
+        fill={`url(#${id("fashion-sleeve")})`}
       />
       <g data-part="collar">
         <path
@@ -390,18 +410,19 @@ function FashionArt({ className }: ArtProps) {
 }
 
 function BeautyArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-beauty-bottle" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("beauty-bottle")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FFC7DE" />
           <stop offset="1" stopColor="#D3608F" />
         </linearGradient>
-        <linearGradient id="art-beauty-cap" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("beauty-cap")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FFE9A8" />
           <stop offset="1" stopColor="#D9A93F" />
         </linearGradient>
-        <linearGradient id="art-beauty-lipstick" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("beauty-lipstick")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#FF7B7B" />
           <stop offset="1" stopColor="#C7263F" />
         </linearGradient>
@@ -424,12 +445,12 @@ function BeautyArt({ className }: ArtProps) {
           width="14"
           height="12"
           rx="4"
-          fill="url(#art-beauty-cap)"
+          fill={`url(#${id("beauty-cap")})`}
         />
         <rect x="38" y="24" width="6" height="8" fill="#C99B36" />
         <path
           d="M28 36a8 8 0 0 1 8-8h10a8 8 0 0 1 8 8v34a8 8 0 0 1-8 8H36a8 8 0 0 1-8-8z"
-          fill="url(#art-beauty-bottle)"
+          fill={`url(#${id("beauty-bottle")})`}
         />
         <rect
           x="33"
@@ -445,7 +466,7 @@ function BeautyArt({ className }: ArtProps) {
       <g data-part="lipstick" transform="translate(56 40) rotate(12)">
         <rect x="0" y="12" width="16" height="30" rx="4" fill="#3B3B45" />
         <rect x="2" y="4" width="12" height="12" rx="3" fill="#5A5A68" />
-        <path d="M3 4h10v-3l-4-3-6 3z" fill="url(#art-beauty-lipstick)" />
+        <path d="M3 4h10v-3l-4-3-6 3z" fill={`url(#${id("beauty-lipstick")})`} />
       </g>
 
       <path
@@ -459,11 +480,12 @@ function BeautyArt({ className }: ArtProps) {
 }
 
 function EntertainmentArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
         <linearGradient
-          id="art-entertainment-front"
+          id={id("entertainment-front")}
           x1="0"
           y1="0"
           x2="1"
@@ -472,11 +494,11 @@ function EntertainmentArt({ className }: ArtProps) {
           <stop offset="0" stopColor="#B79BFF" />
           <stop offset="1" stopColor="#6B3FD4" />
         </linearGradient>
-        <linearGradient id="art-entertainment-back" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("entertainment-back")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#8F73F0" />
           <stop offset="1" stopColor="#4A25A8" />
         </linearGradient>
-        <linearGradient id="art-entertainment-star" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("entertainment-star")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FFE898" />
           <stop offset="1" stopColor="#F0A93A" />
         </linearGradient>
@@ -496,13 +518,13 @@ function EntertainmentArt({ className }: ArtProps) {
         <path
           data-part="ticket-back"
           d="M18 30h60v12a6 6 0 0 0 0 12v12H18V54a6 6 0 0 0 0-12z"
-          fill="url(#art-entertainment-back)"
+          fill={`url(#${id("entertainment-back")})`}
           transform="translate(6 6)"
         />
         <g data-part="ticket-front">
           <path
             d="M14 26h60v12a6 6 0 0 0 0 12v12H14V50a6 6 0 0 0 0-12z"
-            fill="url(#art-entertainment-front)"
+            fill={`url(#${id("entertainment-front")})`}
           />
           <path
             d="M44 26v36"
@@ -515,7 +537,7 @@ function EntertainmentArt({ className }: ArtProps) {
         <path
           data-part="star"
           d="M28 42l2.9 6.5L38 50l-5.4 4.3L34 62l-6-3.6L22 62l1.4-7.7L18 50l7.1-1.5z"
-          fill="url(#art-entertainment-star)"
+          fill={`url(#${id("entertainment-star")})`}
         />
       </g>
     </svg>
@@ -523,18 +545,19 @@ function EntertainmentArt({ className }: ArtProps) {
 }
 
 function DigitalArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-digital-front" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("digital-front")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#4FE0B0" />
           <stop offset="1" stopColor="#0E8F79" />
         </linearGradient>
-        <linearGradient id="art-digital-back" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("digital-back")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#8ED8FF" />
           <stop offset="1" stopColor="#2A6FC4" />
         </linearGradient>
-        <linearGradient id="art-digital-chip" x1="0" y1="0" x2="0" y2="1">
+        <linearGradient id={id("digital-chip")} x1="0" y1="0" x2="0" y2="1">
           <stop offset="0" stopColor="#FFE9A8" />
           <stop offset="1" stopColor="#D9A93F" />
         </linearGradient>
@@ -558,7 +581,7 @@ function DigitalArt({ className }: ArtProps) {
           width="60"
           height="38"
           rx="8"
-          fill="url(#art-digital-back)"
+          fill={`url(#${id("digital-back")})`}
           transform="translate(4 8)"
         />
         <g data-part="card-front">
@@ -568,7 +591,7 @@ function DigitalArt({ className }: ArtProps) {
             width="60"
             height="38"
             rx="8"
-            fill="url(#art-digital-front)"
+            fill={`url(#${id("digital-front")})`}
           />
           <rect
             x="16"
@@ -585,7 +608,7 @@ function DigitalArt({ className }: ArtProps) {
             width="13"
             height="10"
             rx="3"
-            fill="url(#art-digital-chip)"
+            fill={`url(#${id("digital-chip")})`}
           />
           <rect
             x="42"
@@ -603,10 +626,11 @@ function DigitalArt({ className }: ArtProps) {
 }
 
 function DefaultArt({ className }: ArtProps) {
+  const id = useArtId();
   return (
     <svg {...frame(className)}>
       <defs>
-        <linearGradient id="art-default-tote" x1="0" y1="0" x2="1" y2="1">
+        <linearGradient id={id("default-tote")} x1="0" y1="0" x2="1" y2="1">
           <stop offset="0" stopColor="#9FE7C8" />
           <stop offset="1" stopColor="#128A63" />
         </linearGradient>
@@ -633,7 +657,7 @@ function DefaultArt({ className }: ArtProps) {
       <g data-part="tote">
         <path
           d="M22 34h52l-4 40a6 6 0 0 1-6 5H32a6 6 0 0 1-6-5z"
-          fill="url(#art-default-tote)"
+          fill={`url(#${id("default-tote")})`}
         />
         <rect
           x="27"

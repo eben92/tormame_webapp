@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Search, SearchX, X } from "lucide-react";
+import { Loader2, Search, X } from "lucide-react";
+import { CategoryCard } from "@/components/shared/category-card";
 import { SectionHeader } from "@/components/shared/section-header";
 import {
   SearchProductCard,
@@ -22,12 +23,43 @@ import type { SearchResultItem } from "@/lib/api/schemas/product";
 import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import { useGetCategories } from "@/lib/api/services/catalog";
 import { useGlobalSearch } from "@/lib/api/services/search";
+import { sortCategoriesByDefault } from "@/lib/category-order";
 import { splitRailProducts } from "@/lib/search-rail";
 import { storeImageUrl } from "@/lib/store-image";
 import { STRINGS } from "@/lib/strings";
-import { deliveryFeeLabel, formatCedis, toTitleCase } from "@/lib/utils";
+import { cn, deliveryFeeLabel, formatCedis } from "@/lib/utils";
 
 const SEARCH_DEBOUNCE_MS = 300;
+
+/** Widest the category grid gets; it runs two-up on a phone. */
+const CATEGORY_COLUMNS = 4;
+
+const COLUMN_SPAN: Record<number, string> = {
+  1: "md:col-span-1",
+  2: "md:col-span-2",
+  3: "md:col-span-3",
+  4: "md:col-span-4",
+};
+
+/**
+ * Cards on a short last row widen to share the columns left over, so the grid
+ * closes off cleanly however many verticals the API returns.
+ */
+function rowFillClass(index: number, total: number): string {
+  const leftover = total % CATEGORY_COLUMNS;
+  const isLast = index === total - 1;
+  const inLastRow = leftover > 0 && index >= total - leftover;
+
+  const share = inLastRow ? Math.floor(CATEGORY_COLUMNS / leftover) : 1;
+  // A row that can't be split evenly gives the remainder to the final card.
+  const columns =
+    inLastRow && isLast ? share + (CATEGORY_COLUMNS % leftover) : share;
+
+  return cn(
+    total % 2 === 1 && isLast ? "col-span-2" : "col-span-1",
+    COLUMN_SPAN[columns],
+  );
+}
 
 /** One store's product rail: up to five products, then a View-all tile. */
 function RailProducts({
@@ -120,6 +152,16 @@ export function ExploreScreen({
   const allCategories = categories ?? [];
   const hasMultipleCategories = allCategories.length > 1;
 
+  // Ranked the way the lobby ranks them, so Food leads on both pages rather
+  // than wherever the API happened to put it.
+  const orderedCategories = React.useMemo(() => {
+    const entries = categories ?? [];
+    const byLabel = new Map(entries.map((entry) => [entry.label, entry]));
+    return sortCategoriesByDefault(entries.map((entry) => entry.label))
+      .map((label) => byLabel.get(label))
+      .filter((entry) => entry !== undefined);
+  }, [categories]);
+
   const search = useGlobalSearch(activeQuery);
   const results = search.data?.items ?? [];
   const total = search.data?.total ?? 0;
@@ -180,7 +222,7 @@ export function ExploreScreen({
             <ErrorState error={search.error} onRetry={() => search.refetch()} />
           ) : showEmpty ? (
             <EmptyState
-              icon={SearchX}
+              art="search"
               title={STRINGS.empty.search.title}
               action={{
                 label: STRINGS.empty.search.action,
@@ -242,12 +284,13 @@ export function ExploreScreen({
                 <div className="px-4 md:px-0">
                   <SectionHeader title={STRINGS.explore.categoriesTitle} />
                 </div>
-                <div className="scrollbar-none flex gap-2 overflow-x-auto px-4 md:flex-wrap md:px-0">
-                  {allCategories.map((category) => (
-                    <FilterChip
+                <div className="grid grid-flow-dense grid-cols-2 gap-3 px-4 md:grid-cols-4 md:gap-4 md:px-0">
+                  {orderedCategories.map((category, index) => (
+                    <CategoryCard
                       key={category.id}
-                      label={toTitleCase(category.label)}
-                      onClick={() => router.push(`/home?category=${category.id}`)}
+                      label={category.label}
+                      href={`/home?category=${category.id}`}
+                      className={rowFillClass(index, orderedCategories.length)}
                     />
                   ))}
                 </div>

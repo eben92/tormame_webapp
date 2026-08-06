@@ -14,7 +14,6 @@ interface CheckoutState {
   fulfillmentType: FulfillmentType;
   dropoffInstruction: string | null;
   customInstruction: string;
-  noChangeAcknowledged: boolean;
   /** The branch that will fulfil this order. Null until branches load. */
   selectedBranchId: string | null;
   /** True once the customer picked a branch themselves, which outranks the computed default. */
@@ -22,7 +21,6 @@ interface CheckoutState {
   setFulfillmentType: (type: FulfillmentType) => void;
   setDropoffInstruction: (instruction: string | null) => void;
   setCustomInstruction: (text: string) => void;
-  toggleNoChangeAcknowledged: () => void;
   selectBranch: (id: string) => void;
   setDefaultBranch: (id: string) => void;
   reset: () => void;
@@ -33,7 +31,6 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
   fulfillmentType: "DELIVERY",
   dropoffInstruction: null,
   customInstruction: "",
-  noChangeAcknowledged: false,
   selectedBranchId: null,
   branchPickedExplicitly: false,
   setFulfillmentType: (fulfillmentType) => set({ fulfillmentType }),
@@ -49,8 +46,6 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
         ? { customInstruction, dropoffInstruction: null }
         : { customInstruction },
     ),
-  toggleNoChangeAcknowledged: () =>
-    set((state) => ({ noChangeAcknowledged: !state.noChangeAcknowledged })),
   selectBranch: (id) =>
     set({ selectedBranchId: id, branchPickedExplicitly: true }),
   setDefaultBranch: (id) =>
@@ -60,7 +55,6 @@ export const useCheckoutStore = create<CheckoutState>()((set) => ({
       fulfillmentType: "DELIVERY",
       dropoffInstruction: null,
       customInstruction: "",
-      noChangeAcknowledged: false,
       selectedBranchId: null,
       branchPickedExplicitly: false,
     }),

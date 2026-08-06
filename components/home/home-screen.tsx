@@ -3,7 +3,7 @@
 import * as React from "react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Loader2, Search, Store } from "lucide-react";
+import { Loader2, Search } from "lucide-react";
 import { AddressButton } from "@/components/shell/address-button";
 import { CategoryChipRail } from "@/components/shared/category-chip-rail";
 import { SectionHeader } from "@/components/shared/section-header";
@@ -39,7 +39,8 @@ function companyToCard(company: Company) {
   return {
     id: company.id,
     name: company.name,
-    category: typeof company.category === "string" ? company.category : undefined,
+    category:
+      typeof company.category === "string" ? company.category : undefined,
     rating: company.rating,
     deliveryTime: company.delivery_time,
     deliveryFee: deliveryFeeLabel({
@@ -88,12 +89,15 @@ function RailErrorRow({
 /** Single marketing hero — one dominant CTA, never a competing carousel. */
 function HomePromoSection({ onClick }: { onClick: () => void }) {
   return (
-    <div className="px-4">
+    <div className="px-4 md:px-0">
       <button
         type="button"
         onClick={onClick}
         aria-label={STRINGS.home.promoCta}
-        className={`flex min-h-[150px] w-full flex-col justify-end gap-2 overflow-hidden rounded-card bg-linear-to-br from-primary to-primary-pressed p-6 text-left ${focusRing}`}
+        // The fixed brand canvas, not `--primary`: the themed green inverts to
+        // a bright mint in dark mode that the white type on it cannot sit on.
+        // Same block, and the same tokens, as the landing hero and the footer.
+        className={`flex min-h-[150px] w-full flex-col justify-end gap-2 overflow-hidden rounded-card bg-linear-to-br from-(--hero-gradient-from) via-(--hero-gradient-via) to-(--hero-gradient-to) p-6 text-left ${focusRing}`}
       >
         <Text as="span" variant="display" className="text-white">
           {STRINGS.home.promoTitle}
@@ -135,7 +139,9 @@ export function HomeScreen({
   // The category view uses one vertical-scoped query; the default view uses two
   // server-sorted queries whose first page is shared with the See-all screens.
   const categoryQuery = useGetCompanies(
-    category ? { category_vertical: category.toUpperCase(), limit: 20 } : undefined,
+    category
+      ? { category_vertical: category.toUpperCase(), limit: 20 }
+      : undefined,
     { enabled: isCategoryActive },
   );
   const popularQuery = useGetCompanies(
@@ -152,7 +158,9 @@ export function HomeScreen({
   const trendingStores = (trendingQuery.data ?? []).slice(0, 4);
 
   const setCategory = (next?: string) => {
-    router.replace(next ? `/home?category=${next}` : "/home", { scroll: false });
+    router.replace(next ? `/home?category=${next}` : "/home", {
+      scroll: false,
+    });
   };
 
   const handleChipClick = (categoryId: string) =>
@@ -191,7 +199,9 @@ export function HomeScreen({
         {STRINGS.home.pageHeading}
       </Text>
 
-      <div className="flex flex-col gap-3 bg-background pb-3 md:hidden">
+      {/* `pb-2`, not `pb-3`, because the rail below adds its own unit of focus
+          ring room — the gap the customer sees is the column's own `gap-3`. */}
+      <div className="flex flex-col gap-3 bg-background pb-2 md:hidden">
         <AddressButton />
 
         <Link
@@ -200,22 +210,25 @@ export function HomeScreen({
           className={`mx-4 flex min-h-12 items-center gap-3 rounded-full border border-input bg-card px-4 ${focusRing}`}
         >
           <Search size={16} className="text-muted-foreground" aria-hidden />
-          <Text as="span" variant="body" className="flex-1 text-muted-foreground">
+          <Text
+            as="span"
+            variant="body"
+            className="flex-1 text-muted-foreground"
+          >
             {STRINGS.home.searchPlaceholder}
           </Text>
         </Link>
-
-        <CategoryChipRail
-          categories={categories ?? []}
-          activeCategoryId={category}
-          isLoading={isCategoriesLoading}
-          onSelectAll={() => setCategory(undefined)}
-          onSelectCategory={handleChipClick}
-        />
       </div>
 
-      <div className="hidden px-8 pt-6 pb-2 md:block">
-        <div className="mx-auto w-full max-w-[1280px]">
+      {/* One mount across both layouts: the chips draw the lobby artwork, whose
+          SVG gradients are referenced by id, and a second copy behind `md:` wins
+          the id lookup while `display: none` leaves it with nothing to paint.
+
+          The rail carries its own 1rem scroll gutter, so the box makes up only
+          the rest of the desktop page gutter — chips then start on the same
+          line as the header above and the cards below, not 1rem inside them. */}
+      <div className="bg-background pb-2 md:pt-5 md:pb-1">
+        <div className="mx-auto w-full max-w-[1280px] md:px-4">
           <CategoryChipRail
             categories={categories ?? []}
             activeCategoryId={category}
@@ -242,7 +255,7 @@ export function HomeScreen({
               />
             ) : stores.length === 0 ? (
               <EmptyState
-                icon={Store}
+                art="stores"
                 title={STRINGS.empty.categoryStores(categoryLabel).title}
                 action={{
                   label: STRINGS.empty.categoryStores(categoryLabel).action,
@@ -305,7 +318,7 @@ export function HomeScreen({
               />
             ) : homeIsEmpty ? (
               <EmptyState
-                icon={Store}
+                art="stores"
                 title={STRINGS.empty.homeStores.title}
                 action={{
                   label: STRINGS.empty.homeStores.action,
@@ -314,7 +327,7 @@ export function HomeScreen({
               />
             ) : (
               <>
-                <div className="mt-3 md:mt-6 md:px-0">
+                <div className="mt-3 md:mt-6">
                   <HomePromoSection onClick={() => router.push("/explore")} />
                 </div>
 

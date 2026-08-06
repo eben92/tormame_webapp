@@ -2,7 +2,8 @@
 
 import * as React from "react";
 import { useRouter } from "next/navigation";
-import { ClipboardList, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import { EmptyArtwork } from "@/components/shared/empty-artwork";
 import { OrderCard } from "@/components/orders/order-card";
 import { Button } from "@/components/ui/button";
 import { FilterChip } from "@/components/ui/filter-chip";
@@ -44,9 +45,7 @@ function GuestView({
   return (
     <div className="flex flex-1 flex-col items-center justify-center gap-6 px-8">
       <div className="flex flex-col items-center gap-4">
-        <div className="flex size-20 items-center justify-center rounded-full bg-primary-soft">
-          <ClipboardList size={36} className="text-primary" aria-hidden />
-        </div>
+        <EmptyArtwork artKey="orders" className="size-36 md:size-40" />
         <div className="flex flex-col items-center gap-1.5">
           <Text variant="h3" className="text-center">
             {STRINGS.orders.guestTitle}
@@ -171,7 +170,7 @@ export function OrdersScreen() {
           />
         ) : orders.length === 0 ? (
           <EmptyState
-            icon={ClipboardList}
+            art="orders"
             title={STRINGS.empty.orders.title}
             action={{
               label: STRINGS.empty.orders.action,

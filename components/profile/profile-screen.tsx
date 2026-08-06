@@ -152,7 +152,9 @@ export function ProfileScreen() {
 
       <div className="mx-auto flex w-full max-w-[52rem] flex-1 flex-col gap-5 px-4 pb-10 md:px-8">
         {hasHydrated && !user ? (
-          <div className="overflow-hidden rounded-card bg-linear-to-br from-primary to-primary-pressed p-6">
+          // The fixed brand canvas, not `--primary`: the themed green inverts
+          // to a bright mint in dark mode that this white type cannot sit on.
+          <div className="overflow-hidden rounded-card bg-linear-to-br from-(--hero-gradient-from) via-(--hero-gradient-via) to-(--hero-gradient-to) p-6">
             <div className="mx-auto mb-4 flex size-16 items-center justify-center rounded-full bg-white/20">
               <User size={30} className="text-white" aria-hidden />
             </div>
@@ -172,7 +174,7 @@ export function ProfileScreen() {
               </Button>
               <Button
                 onClick={() => router.push("/auth/register")}
-                className="flex-1 bg-white text-primary hover:bg-white/90 active:bg-white/90"
+                className="flex-1 bg-white text-brand-on-light hover:bg-white/90 active:bg-white/90"
               >
                 {STRINGS.profile.menu.createAccount}
               </Button>
@@ -212,7 +214,9 @@ export function ProfileScreen() {
 
         <MenuSection title={STRINGS.profile.menu.discoverSectionTitle}>
           <MenuRow
-            icon={<ShoppingBag size={18} className="text-primary" aria-hidden />}
+            icon={
+              <ShoppingBag size={18} className="text-primary" aria-hidden />
+            }
             label={STRINGS.common.browseStores}
             subtitle={STRINGS.profile.menu.browseStoresSubtitle}
             onClick={() => router.push("/home")}
@@ -272,7 +276,9 @@ export function ProfileScreen() {
         {ENV.CONTACT_EMAIL ? (
           <MenuSection title={STRINGS.profile.menu.supportSectionTitle}>
             <MenuRow
-              icon={<MessageCircle size={18} className="text-primary" aria-hidden />}
+              icon={
+                <MessageCircle size={18} className="text-primary" aria-hidden />
+              }
               label={STRINGS.profile.menu.contactUs}
               subtitle={STRINGS.profile.menu.contactUsSubtitle}
               onClick={() => router.push("/help")}
@@ -283,7 +289,9 @@ export function ProfileScreen() {
         {user ? (
           <MenuSection>
             <MenuRow
-              icon={<LogOut size={18} className="text-destructive" aria-hidden />}
+              icon={
+                <LogOut size={18} className="text-destructive" aria-hidden />
+              }
               label={
                 logout.isPending
                   ? STRINGS.profile.menu.signingOut

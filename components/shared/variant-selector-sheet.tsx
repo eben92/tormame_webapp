@@ -456,7 +456,7 @@ function VariantSheetBody({
         ))}
       </div>
 
-      <div className="flex items-center gap-3 border-t border-border bg-card px-4 pt-4 pb-4 pb-safe">
+      <div className="flex items-center gap-3 border-t border-border bg-card px-4 pt-4 pb-safe-gutter">
         <QuantityStepper
           quantity={quantity}
           onIncrement={() => setQuantity((value) => value + 1)}

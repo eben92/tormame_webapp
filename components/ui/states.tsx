@@ -1,7 +1,9 @@
 "use client";
 
-import type { LucideIcon } from "lucide-react";
-import { CloudOff, ServerCrash } from "lucide-react";
+import {
+  EmptyArtwork,
+  type EmptyArtKey,
+} from "@/components/shared/empty-artwork";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Text } from "@/components/ui/text";
@@ -10,19 +12,15 @@ import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 
 type EmptyStateProps = {
-  icon: LucideIcon;
+  /** Which drawing — see the table on `EmptyArtKey`. */
+  art: EmptyArtKey;
   title: string;
   action?: { label: string; onClick: () => void };
   className?: string;
 };
 
-/** One sentence + one action. Friendly, never a dead end. */
-export function EmptyState({
-  icon: Icon,
-  title,
-  action,
-  className,
-}: EmptyStateProps) {
+/** One picture + one sentence + one action. Friendly, never a dead end. */
+export function EmptyState({ art, title, action, className }: EmptyStateProps) {
   return (
     <div
       className={cn(
@@ -30,9 +28,7 @@ export function EmptyState({
         className,
       )}
     >
-      <div className="flex size-20 items-center justify-center rounded-full bg-primary-soft">
-        <Icon size={36} className="text-primary" aria-hidden />
-      </div>
+      <EmptyArtwork artKey={art} className="size-36 md:size-40" />
       <Text variant="h3" className="text-center">
         {title}
       </Text>
@@ -53,9 +49,11 @@ type ErrorStateProps = {
 
 /** Distinguishes "no internet" from "server problem". Always offers Retry. */
 export function ErrorState({ error, onRetry, className }: ErrorStateProps) {
-  const kind = classifyApiError(error);
   const copy = getErrorCopy(error);
-  const Icon = kind === "offline" ? CloudOff : ServerCrash;
+  // A dead network and a broken server are different apologies, so they get
+  // different pictures; anything else is closer to a server problem than to a
+  // missing connection.
+  const art = classifyApiError(error) === "offline" ? "offline" : "server";
 
   return (
     <div
@@ -65,9 +63,7 @@ export function ErrorState({ error, onRetry, className }: ErrorStateProps) {
         className,
       )}
     >
-      <div className="flex size-20 items-center justify-center rounded-full bg-destructive/10">
-        <Icon size={36} className="text-destructive" aria-hidden />
-      </div>
+      <EmptyArtwork artKey={art} className="mb-1 size-36 md:size-40" />
       <Text variant="h3" className="text-center">
         {copy.title}
       </Text>

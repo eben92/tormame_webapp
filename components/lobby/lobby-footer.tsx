@@ -19,8 +19,10 @@ import { cn } from "@/lib/utils";
  * The landing page's footer. A Server Component: every link is either static or
  * read from `ENV` at build time, so none of this ships as client JavaScript.
  *
- * Anything configured by URL is hidden when its variable is blank — a store
- * badge or social icon that goes nowhere is worse than one that isn't there.
+ * A social icon that goes nowhere is worse than one that isn't there, so a
+ * blank variable removes it. The store badges are the exception: the apps are
+ * part of the pitch, so a missing listing URL turns the badge inert rather
+ * than dropping it.
  */
 
 const SOCIALS = [
@@ -54,7 +56,6 @@ const footerLink = cn(
 
 export function LobbyFooter() {
   const socials = SOCIALS.filter((social) => social.url);
-  const hasStoreLinks = Boolean(ENV.IOS_APP_URL || ENV.ANDROID_APP_URL);
 
   return (
     // The deep brand green, not `bg-foreground`: the ink colour inverts in dark
@@ -153,33 +154,29 @@ export function LobbyFooter() {
             </li>
           </FooterColumn>
 
-          {hasStoreLinks ? (
-            <div className="flex flex-col gap-3">
-              <h2 className="font-sans text-xs font-bold tracking-widest text-white/50 uppercase">
-                {STRINGS.footer.getTheApp}
-              </h2>
-              <div className="flex flex-col gap-2.5">
-                {ENV.IOS_APP_URL ? (
-                  <StoreBadge
-                    href={ENV.IOS_APP_URL}
-                    label={STRINGS.footer.appStore}
-                    prefix="Download on the"
-                    caption="App Store"
-                    icon={<AppleIcon size={22} />}
-                  />
-                ) : null}
-                {ENV.ANDROID_APP_URL ? (
-                  <StoreBadge
-                    href={ENV.ANDROID_APP_URL}
-                    label={STRINGS.footer.playStore}
-                    prefix="Get it on"
-                    caption="Google Play"
-                    icon={<GooglePlayIcon size={22} />}
-                  />
-                ) : null}
-              </div>
+          <div className="flex flex-col gap-3">
+            <h2 className="font-sans text-xs font-bold tracking-widest text-white/50 uppercase">
+              {STRINGS.footer.getTheApp}
+            </h2>
+            <div className="flex flex-col gap-2.5">
+              <StoreBadge
+                href={ENV.IOS_APP_URL}
+                label={STRINGS.footer.appStore}
+                soonLabel={STRINGS.footer.appStoreSoon}
+                prefix="Download on the"
+                caption="App Store"
+                icon={<AppleIcon size={22} />}
+              />
+              <StoreBadge
+                href={ENV.ANDROID_APP_URL}
+                label={STRINGS.footer.playStore}
+                soonLabel={STRINGS.footer.playStoreSoon}
+                prefix="Get it on"
+                caption="Google Play"
+                icon={<GooglePlayIcon size={22} />}
+              />
             </div>
-          ) : null}
+          </div>
         </div>
 
         <div className="mt-10 flex flex-col gap-4 border-t border-white/10 pt-6">
@@ -228,25 +225,65 @@ function FooterColumn({
   );
 }
 
+/* Both states share a frame so the pair still reads as one set of badges. */
+const storeBadgeFrame =
+  "flex items-center gap-3 rounded-xl border px-3.5 py-2.5";
+const storeBadgePrefix = "font-sans text-[10px]";
+
 /**
  * Our own badge rather than the platforms' artwork: Apple and Google both
  * publish badges under licences with fixed sizes, spacing and localisations.
  * Swapping the official images in here is a two-line change.
+ *
+ * Without an `href` the badge is a plain `span`, not a disabled control: there
+ * is nothing to enable later on this page, and no affordance should suggest a
+ * press that will never land.
  */
 function StoreBadge({
   href,
   label,
+  soonLabel,
   prefix,
   caption,
   icon,
 }: {
   href: string;
   label: string;
+  soonLabel: string;
   /** Each store words its own badge: "Download on the" vs "Get it on". */
   prefix: string;
   caption: string;
   icon: React.ReactNode;
 }) {
+  if (!href) {
+    // `role="img"` with a label keeps the badge a single announced object
+    // rather than loose text a reader might mistake for a link.
+    return (
+      <span
+        role="img"
+        aria-label={soonLabel}
+        title={soonLabel}
+        className={cn(storeBadgeFrame, "border-white/10 bg-white/5")}
+      >
+        {/* Opacity, not a text colour: the Play mark paints its own fills. */}
+        <span className="shrink-0 text-white opacity-40">{icon}</span>
+        <span className="flex flex-col leading-tight">
+          <span
+            className={cn(
+              storeBadgePrefix,
+              "font-bold tracking-widest text-white/50 uppercase",
+            )}
+          >
+            {STRINGS.footer.comingSoon}
+          </span>
+          <span className="font-sans text-sm font-bold text-white/50">
+            {caption}
+          </span>
+        </span>
+      </span>
+    );
+  }
+
   return (
     <a
       href={href}
@@ -254,14 +291,15 @@ function StoreBadge({
       rel="noreferrer noopener"
       aria-label={label}
       className={cn(
-        "flex items-center gap-3 rounded-xl border border-white/20 bg-white/10 px-3.5 py-2.5",
+        storeBadgeFrame,
+        "border-white/20 bg-white/10",
         "transition-colors hover:bg-white/20",
         focusRing,
       )}
     >
       <span className="shrink-0 text-white">{icon}</span>
       <span className="flex flex-col leading-tight">
-        <span className="font-sans text-[10px] text-white/60">{prefix}</span>
+        <span className={cn(storeBadgePrefix, "text-white/60")}>{prefix}</span>
         <span className="font-sans text-sm font-bold text-white">
           {caption}
         </span>

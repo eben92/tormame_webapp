@@ -41,11 +41,12 @@ export function BrandMark({
  * result or a shared link has to say whose it is. So the mobile layout is the
  * native screen with this above it, and nothing else changes.
  *
- * Deliberately not sticky: several screens already pin their own bars to the
- * top of the viewport (the shop's category rail, for one), and a second sticky
- * layer would either cover them or force every one of them to know this bar's
- * height. It also owns the top safe-area inset, which is why the screens below
- * it no longer apply their own.
+ * Pinned, at the same z-40 as the desktop header it stands in for, so the name
+ * is still there once you have scrolled away from the top. It owns the top
+ * safe-area inset, which is why the screens below it no longer apply their own
+ * — and why it is sized by `--brand-bar-offset` (the bar plus that inset)
+ * rather than a flat 3.5rem. Every other bar that pins itself to the top parks
+ * at that same offset instead of at 0, so nothing has to know this height.
  */
 export function BrandBar({
   href = "/home",
@@ -57,7 +58,7 @@ export function BrandBar({
   return (
     <div
       className={cn(
-        "flex h-14 shrink-0 items-center border-b border-border bg-card px-4 pt-safe",
+        "sticky top-0 z-40 flex h-(--brand-bar-offset) shrink-0 items-center border-b border-border bg-card px-4 pt-safe",
         className,
       )}
     >

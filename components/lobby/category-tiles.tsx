@@ -171,8 +171,11 @@ function Tile({
           aria-hidden
           className={cn(
             "pointer-events-none absolute right-[-6%] bottom-[-8%] aspect-square",
+            // The featured tile is a two-by-two block on desktop, so its
+            // drawing is sized against that, not against the small tiles —
+            // at the others' share it left the block reading as empty.
             isFeatured
-              ? "w-[34%] md:w-[38%]"
+              ? "w-[34%] md:w-[50%]"
               : isWide
                 ? "w-[52%] md:w-[28%]"
                 : "w-[52%]",
@@ -187,7 +190,7 @@ function Tile({
         <span
           className={cn(
             "relative flex flex-col gap-0.5",
-            isFeatured ? "pr-[36%] md:pr-[46%]" : "pr-[46%]",
+            isFeatured ? "pr-[36%] md:pr-[52%]" : "pr-[46%]",
           )}
         >
           <span

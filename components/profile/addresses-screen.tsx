@@ -73,7 +73,7 @@ export function AddressesScreen() {
           <ErrorState error={error} onRetry={() => refetch()} />
         ) : addresses.length === 0 ? (
           <EmptyState
-            icon={MapPin}
+            art="addresses"
             title={STRINGS.empty.addresses.title}
             action={{ label: STRINGS.empty.addresses.action, onClick: openAdd }}
           />

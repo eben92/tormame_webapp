@@ -85,6 +85,20 @@ export function ShopScreen({
   // itself changes, not on every render.
   const sections = React.useMemo(() => menu.data ?? [], [menu.data]);
   const sectionRefs = React.useRef(new Map<string, HTMLElement>());
+  const pinnedBarsRef = React.useRef<HTMLDivElement | null>(null);
+
+  /**
+   * The first row of the viewport a section heading can land on. Measured, not
+   * assumed: this bar parks at its own CSS `top` — the brand bar's offset on
+   * mobile, the desktop header's height above md — so that plus its own height
+   * is everything currently covering the top of the page.
+   */
+  const pinnedBarsBottom = React.useCallback(() => {
+    const bars = pinnedBarsRef.current;
+    if (!bars) return 0;
+    const stickyTop = Number.parseFloat(getComputedStyle(bars).top);
+    return (Number.isNaN(stickyTop) ? 0 : stickyTop) + bars.offsetHeight;
+  }, []);
 
   // Highlights whichever section is currently under the sticky bar.
   React.useEffect(() => {
@@ -98,16 +112,22 @@ export function ShopScreen({
           setActiveCategoryId(visible.target.dataset.sectionId ?? null);
         }
       },
-      { rootMargin: "-140px 0px -70% 0px", threshold: 0 },
+      {
+        rootMargin: `-${pinnedBarsBottom()}px 0px -70% 0px`,
+        threshold: 0,
+      },
     );
     sectionRefs.current.forEach((element) => observer.observe(element));
     return () => observer.disconnect();
-  }, [isSearching, sections]);
+    // `searchVisible` changes the height of the pinned bar, so the band the
+    // observer watches has to be measured again.
+  }, [isSearching, sections, searchVisible, pinnedBarsBottom]);
 
   const scrollToSection = (sectionId: string) => {
     const element = sectionRefs.current.get(sectionId);
     if (!element) return;
-    const top = element.getBoundingClientRect().top + window.scrollY - 132;
+    const top =
+      element.getBoundingClientRect().top + window.scrollY - pinnedBarsBottom();
     window.scrollTo({ top, behavior: "smooth" });
     setActiveCategoryId(sectionId);
   };
@@ -132,7 +152,7 @@ export function ShopScreen({
   if (!company.data) {
     return (
       <EmptyState
-        icon={X}
+        art="search"
         title={STRINGS.shop.notFoundTitle}
         action={{ label: STRINGS.common.back, onClick: () => router.back() }}
       />
@@ -148,6 +168,7 @@ export function ShopScreen({
   });
 
   const visibleProducts = isSearching ? (searchResults.data ?? []) : [];
+  const showCategoryRail = !isSearching && sections.length > 1;
 
   return (
     <div className="flex flex-1 flex-col">
@@ -164,101 +185,126 @@ export function ShopScreen({
           <div className="absolute inset-0 bg-linear-to-b from-(--header-scrim-top) to-(--header-scrim-bottom)" />
         </div>
 
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3">
-          <button
-            type="button"
-            onClick={() => router.back()}
-            aria-label={STRINGS.common.back}
-            className={cn(
-              "flex size-12 items-center justify-center rounded-full bg-(--overlay) text-white",
-              pressableScale,
-              focusRing,
-            )}
-          >
-            <ArrowLeft size={20} aria-hidden />
-          </button>
-          <button
-            type="button"
-            onClick={() => setSearchVisible((visible) => !visible)}
-            aria-label={STRINGS.shop.searchToggleLabel}
-            aria-pressed={searchVisible}
-            className={cn(
-              "flex size-12 items-center justify-center rounded-full bg-(--overlay) text-white",
-              pressableScale,
-              focusRing,
-            )}
-          >
-            {searchVisible ? <X size={20} aria-hidden /> : <Search size={20} aria-hidden />}
-          </button>
+        {/* The photo is full-bleed; everything written on it belongs to the
+            same centred column as the menu below, or the store name hangs off
+            the left edge of a wide window while its products do not. */}
+        <div className="absolute inset-x-0 top-0">
+          <div className="mx-auto flex w-full max-w-[1280px] items-center justify-between px-4 pt-3 md:px-8">
+            <button
+              type="button"
+              onClick={() => router.back()}
+              aria-label={STRINGS.common.back}
+              className={cn(
+                "flex size-12 items-center justify-center rounded-full bg-(--overlay) text-white",
+                pressableScale,
+                focusRing,
+              )}
+            >
+              <ArrowLeft size={20} aria-hidden />
+            </button>
+            <button
+              type="button"
+              onClick={() => setSearchVisible((visible) => !visible)}
+              aria-label={STRINGS.shop.searchToggleLabel}
+              aria-pressed={searchVisible}
+              className={cn(
+                "flex size-12 items-center justify-center rounded-full bg-(--overlay) text-white",
+                pressableScale,
+                focusRing,
+              )}
+            >
+              {searchVisible ? <X size={20} aria-hidden /> : <Search size={20} aria-hidden />}
+            </button>
+          </div>
         </div>
 
-        <div className="absolute inset-x-0 bottom-0 flex flex-col gap-1 px-4 pb-4 md:px-8">
-          <Text variant="h1" className="text-white">
-            {store.name}
-          </Text>
-          <div className="flex items-center gap-3">
-            {rating != null && rating > 0 ? (
+        <div className="absolute inset-x-0 bottom-0">
+          <div className="mx-auto flex w-full max-w-[1280px] flex-col gap-1 px-4 pb-4 md:px-8">
+            <Text variant="h1" className="text-white">
+              {store.name}
+            </Text>
+            <div className="flex items-center gap-3">
+              {rating != null && rating > 0 ? (
+                <span className="flex items-center gap-1">
+                  <Star size={12} className="fill-accent text-accent" aria-hidden />
+                  <Text as="span" variant="body-small" className="text-white/90">
+                    {rating}
+                  </Text>
+                </span>
+              ) : null}
               <span className="flex items-center gap-1">
-                <Star size={12} className="fill-accent text-accent" aria-hidden />
+                <Truck size={12} className="text-white/90" aria-hidden />
                 <Text as="span" variant="body-small" className="text-white/90">
-                  {rating}
+                  {fee}
                 </Text>
               </span>
-            ) : null}
-            <span className="flex items-center gap-1">
-              <Truck size={12} className="text-white/90" aria-hidden />
-              <Text as="span" variant="body-small" className="text-white/90">
-                {fee}
-              </Text>
-            </span>
+            </div>
           </div>
         </div>
       </div>
 
-      {searchVisible ? (
-        <div className="sticky top-0 z-30 bg-background px-4 py-3 md:top-[4.5rem] md:px-8">
-          <div className="mx-auto flex min-h-12 w-full max-w-[1280px] items-center gap-3 rounded-full border border-input bg-card px-4">
-            <Search size={16} className="text-muted-foreground" aria-hidden />
-            <input
-              autoFocus
-              value={searchQuery}
-              onChange={(event) => setSearchQuery(event.target.value)}
-              placeholder={STRINGS.shop.searchPlaceholder(store.name)}
-              aria-label={STRINGS.shop.searchToggleLabel}
-              type="search"
-              className="flex-1 bg-transparent font-sans text-base text-foreground outline-none placeholder:text-muted-foreground"
-            />
-          </div>
-        </div>
-      ) : null}
-
-      {!isSearching && sections.length > 1 ? (
-        <div className="sticky top-0 z-30 border-b border-border bg-background py-2 md:top-[4.5rem] md:hidden">
-          <div
-            className="scrollbar-none flex gap-2 overflow-x-auto px-4"
-            aria-label={STRINGS.shop.categoryBarLabel}
-          >
-            {sections.map((section) => {
-              const sectionId = section.category.id ?? section.category.name;
-              return (
-                <FilterChip
-                  key={sectionId}
-                  variant="tab"
-                  label={section.category.name}
-                  isActive={sectionId === activeCategoryId}
-                  onClick={() => scrollToSection(sectionId)}
+      {/* One pinned layer, not two: search and the category rail can be on
+          screen together, so they stack inside a single sticky box rather than
+          both claiming the same offset. That box is also what `scrollToSection`
+          measures. */}
+      {searchVisible || showCategoryRail ? (
+        <div
+          ref={pinnedBarsRef}
+          className="sticky top-(--brand-bar-offset) z-30 bg-background md:top-[4.5rem]"
+        >
+          {searchVisible ? (
+            <div className="px-4 py-3 md:px-8">
+              <div className="mx-auto flex min-h-12 w-full max-w-[1280px] items-center gap-3 rounded-full border border-input bg-card px-4">
+                <Search size={16} className="text-muted-foreground" aria-hidden />
+                <input
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  placeholder={STRINGS.shop.searchPlaceholder(store.name)}
+                  aria-label={STRINGS.shop.searchToggleLabel}
+                  type="search"
+                  className="flex-1 bg-transparent font-sans text-base text-foreground outline-none placeholder:text-muted-foreground"
                 />
-              );
-            })}
-          </div>
+              </div>
+            </div>
+          ) : null}
+
+          {showCategoryRail ? (
+            <div className="border-b border-border py-2 md:hidden">
+              <div
+                className="scrollbar-none flex gap-2 overflow-x-auto px-4"
+                aria-label={STRINGS.shop.categoryBarLabel}
+              >
+                {sections.map((section) => {
+                  const sectionId = section.category.id ?? section.category.name;
+                  return (
+                    <FilterChip
+                      key={sectionId}
+                      variant="tab"
+                      label={section.category.name}
+                      isActive={sectionId === activeCategoryId}
+                      onClick={() => scrollToSection(sectionId)}
+                    />
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
       ) : null}
 
       <div className="mx-auto flex w-full max-w-[1280px] flex-1 gap-8 md:px-8 md:py-8">
-        {!isSearching && sections.length > 1 ? (
+        {showCategoryRail ? (
           <nav
             aria-label={STRINGS.shop.categoryBarLabel}
-            className="sticky top-[6.5rem] hidden h-fit w-56 shrink-0 flex-col gap-1 md:flex"
+            className={cn(
+              "sticky hidden h-fit w-56 shrink-0 flex-col gap-1 md:flex",
+              // The search bar pins between the header and this column, so
+              // while it is open the first category parks behind it.
+              searchVisible
+                ? "top-[calc(6.5rem+var(--shop-search-height))]"
+                : "top-[6.5rem]",
+            )}
           >
             {sections.map((section) => {
               const sectionId = section.category.id ?? section.category.name;
@@ -293,7 +339,7 @@ export function ShopScreen({
               </div>
             ) : visibleProducts.length === 0 ? (
               <EmptyState
-                icon={Search}
+                art="search"
                 title={STRINGS.empty.search.title}
                 action={{
                   label: STRINGS.empty.search.action,
@@ -315,7 +361,7 @@ export function ShopScreen({
             )
           ) : sections.length === 0 ? (
             <EmptyState
-              icon={Search}
+              art="stores"
               title={STRINGS.empty.storeProducts.title}
               action={{
                 label: STRINGS.empty.storeProducts.action,

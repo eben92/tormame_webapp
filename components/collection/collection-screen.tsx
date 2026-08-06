@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Store } from "lucide-react";
+import { ArrowLeft } from "lucide-react";
 import { StoreCard } from "@/components/shared/cards/store-card";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
@@ -81,7 +81,7 @@ export function CollectionScreen({
           <ErrorState error={query.error} onRetry={() => query.refetch()} />
         ) : stores.length === 0 ? (
           <EmptyState
-            icon={Store}
+            art="stores"
             title={STRINGS.collection.emptyTitle}
             action={{
               label: STRINGS.common.browseStores,

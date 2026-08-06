@@ -80,6 +80,12 @@
   --color-tile-digital: var(--tile-digital);
   --color-tile-neutral: var(--tile-neutral);
 
+  /* Landing hero — a fixed brand canvas rather than a themed one; see :root. */
+  --color-brand-on-light: var(--brand-on-light);
+  --color-hero-field: var(--hero-field);
+  --color-hero-field-foreground: var(--hero-field-foreground);
+  --color-hero-field-icon: var(--hero-field-icon);
+
   --font-sans: var(--font-dm-sans);
   --font-display: var(--font-bricolage);
   --font-heading: var(--font-bricolage);
@@ -141,10 +147,47 @@
   --header-scrim-bottom: rgb(16 22 19 / 0.82);
   --splash-background: #002923;
 
+  /* Landing hero canvas. Deliberately identical in both themes and never
+     overridden in `.dark`: the header is the brand's green block with white
+     type on it, and deriving it from `--primary` inverted it into a bright
+     mint that white cannot sit on. Anchored to `--splash-background` so the
+     header and the footer read as one block down the page. */
+  --hero-gradient-from: hsl(171 100% 9%);
+  --hero-gradient-via: hsl(163 90% 19%);
+  --hero-gradient-to: hsl(171 100% 9%);
+  --hero-glow-cool: hsl(0 0% 100% / 0.12);
+  --hero-glow-warm: hsl(38 92% 50% / 0.2);
+
+  /* The emerald that reads on a white surface in either theme. Controls sitting
+     on the fixed brand canvas need it: `--primary` inverts to a bright mint
+     that white cannot carry. */
+  --brand-on-light: hsl(163 94% 24%);
+
+  /* The search pill rides that canvas, so it holds its light surface and its
+     dark ink instead of following `--card` down into the dark theme. */
+  --hero-field: hsl(0 0% 100%);
+  --hero-field-foreground: hsl(171 3% 43%);
+  --hero-field-icon: hsl(163 94% 24%);
+
   /* Layout rhythm shared by the mobile shell and the desktop shell. */
   --screen-gutter: 1rem;
   --tab-bar-height: 4rem;
+  --brand-bar-height: 3.5rem;
+  /* The floating basket pill's footprint on a phone — its own height plus the
+     gutter it keeps below itself. Screens reserve this so their last row can
+     be scrolled clear of it, the way they already do for the tab bar. */
+  --cart-bar-height: 5rem;
   --desktop-header-height: 4.5rem;
+  /* The store's search bar, while it is open: a 3rem pill in 0.75rem of
+     padding. It pins under the desktop header, so the menu column beside it
+     has to clear it as well. */
+  --shop-search-height: 4.5rem;
+
+  /* What the pinned mobile brand bar actually covers: the bar plus the device
+     inset it carries — 0 in a desktop browser, a notch on iOS Safari. The bar
+     sizes itself with this, and anything else that pins to the top parks here
+     rather than at 0. */
+  --brand-bar-offset: calc(var(--brand-bar-height) + env(safe-area-inset-top));
 }
 
 .dark {
@@ -174,15 +217,19 @@
   --input: hsl(150 8% 18%);
   --ring: hsl(158 64% 52%);
 
-  --tile-food: hsl(28 42% 18%);
-  --tile-grocery: hsl(140 34% 16%);
-  --tile-pharmacy: hsl(196 44% 17%);
-  --tile-electronics: hsl(220 38% 19%);
-  --tile-fashion: hsl(340 34% 19%);
-  --tile-beauty: hsl(280 30% 19%);
-  --tile-entertainment: hsl(258 36% 20%);
-  --tile-digital: hsl(170 34% 15%);
-  --tile-neutral: hsl(60 6% 16%);
+  /* Lighter and a touch more saturated than a straight dark-theme inversion
+     would give. These are not surfaces, they are the ground an illustration is
+     drawn on: at the original 15–20% lightness every plate read as a black
+     disc and the drawings lost their form. */
+  --tile-food: hsl(28 45% 27%);
+  --tile-grocery: hsl(140 36% 24%);
+  --tile-pharmacy: hsl(196 45% 26%);
+  --tile-electronics: hsl(220 40% 28%);
+  --tile-fashion: hsl(340 36% 28%);
+  --tile-beauty: hsl(280 32% 28%);
+  --tile-entertainment: hsl(258 38% 29%);
+  --tile-digital: hsl(170 36% 23%);
+  --tile-neutral: hsl(60 7% 24%);
 }
 
 @keyframes sheet-up {
@@ -231,4 +278,11 @@
 
 @utility pt-safe {
   padding-top: env(safe-area-inset-top);
+}
+
+/* A bar pinned to the bottom needs its own gutter *and* the device inset.
+   `pb-4 pb-safe` cannot say that: both set padding-bottom, and the inset wins
+   — which is 0 in a desktop browser, so the gutter silently disappears. */
+@utility pb-safe-gutter {
+  padding-bottom: calc(var(--screen-gutter) + env(safe-area-inset-bottom));
 }

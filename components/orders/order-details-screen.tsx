@@ -337,7 +337,7 @@ export function OrderDetailsScreen({ orderId }: { orderId: string }) {
       </div>
 
       {action != null || (isRatable && !rating) ? (
-        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background p-4 pb-safe md:static md:mx-auto md:w-full md:max-w-[52rem] md:border-0 md:px-8">
+        <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background p-4 pb-safe-gutter md:static md:mx-auto md:w-full md:max-w-[52rem] md:border-0 md:px-8">
           {action != null ? (
             <Button
               variant="secondary"

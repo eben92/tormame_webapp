@@ -6,7 +6,6 @@ import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Search } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
@@ -44,16 +43,20 @@ function BrandMark({ size = 30 }: { size?: number }) {
   );
 }
 
-/** Deep-green header canvas with two soft light sources — the brand's block. */
+/**
+ * Deep-green header canvas with two soft light sources — the brand's block.
+ * Painted from the `--hero-*` tokens, which hold the same values in both
+ * themes; the themed palette inverts, and this block must not.
+ */
 function Ambience() {
   return (
     <div
       aria-hidden
       className="pointer-events-none absolute inset-0 overflow-hidden"
     >
-      <div className="absolute inset-0 bg-linear-to-br from-primary-pressed via-primary to-primary-pressed" />
-      <div className="absolute -top-24 -left-20 size-72 rounded-full bg-white/12 blur-3xl" />
-      <div className="absolute -right-24 -bottom-28 size-80 rounded-full bg-accent/20 blur-3xl" />
+      <div className="absolute inset-0 bg-linear-to-br from-(--hero-gradient-from) via-(--hero-gradient-via) to-(--hero-gradient-to)" />
+      <div className="absolute -top-24 -left-20 size-72 rounded-full bg-(--hero-glow-cool) blur-3xl" />
+      <div className="absolute -right-24 -bottom-28 size-80 rounded-full bg-(--hero-glow-warm) blur-3xl" />
     </div>
   );
 }
@@ -165,13 +168,7 @@ export function LobbyScreen({
             </div>
           </div>
 
-          <div className="mt-4 flex flex-col items-start gap-2.5 md:mt-10 md:items-center md:gap-3 md:text-center">
-            <Badge
-              data-animate="intro"
-              className="border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white md:text-sm"
-            >
-              {STRINGS.lobby.badge}
-            </Badge>
+          <div className="mt-6 flex flex-col items-start gap-2.5 md:mt-12 md:items-center md:gap-3 md:text-center">
             <h1
               data-animate="intro"
               className="max-w-4xl font-display text-[2.125rem] leading-[1.08] font-extrabold whitespace-pre-line text-white md:text-[clamp(2.75rem,4.6vw,4rem)] md:leading-[1.05]"
@@ -260,14 +257,14 @@ function SearchPill({ onPress }: { onPress: () => void }) {
       onClick={onPress}
       aria-label={STRINGS.home.searchLabel}
       className={cn(
-        "flex min-h-12 w-full items-center gap-2.5 rounded-full bg-card px-4 py-3 text-left shadow-e2",
-        "hover:bg-card/90",
+        "flex min-h-12 w-full items-center gap-2.5 rounded-full bg-hero-field px-4 py-3 text-left shadow-e2",
+        "hover:bg-hero-field/90",
         pressableScale,
         focusRing,
       )}
     >
-      <Search size={18} className="shrink-0 text-primary" aria-hidden />
-      <span className="truncate font-sans text-sm font-medium text-muted-foreground">
+      <Search size={18} className="shrink-0 text-hero-field-icon" aria-hidden />
+      <span className="truncate font-sans text-sm font-medium text-hero-field-foreground">
         {STRINGS.home.searchPlaceholder}
       </span>
     </button>

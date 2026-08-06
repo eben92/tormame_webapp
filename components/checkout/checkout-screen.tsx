@@ -3,12 +3,11 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AddressSheet } from "@/components/shared/address-sheet";
 import { BranchSheet } from "@/components/checkout/branch-sheet";
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { FilterChip } from "@/components/ui/filter-chip";
 import { Input } from "@/components/ui/input";
 import { QuantityStepper } from "@/components/ui/quantity-stepper";
@@ -213,12 +212,6 @@ export function CheckoutScreen() {
   const setCustomInstruction = useCheckoutStore(
     (state) => state.setCustomInstruction,
   );
-  const noChangeAcknowledged = useCheckoutStore(
-    (state) => state.noChangeAcknowledged,
-  );
-  const toggleNoChangeAcknowledged = useCheckoutStore(
-    (state) => state.toggleNoChangeAcknowledged,
-  );
   const selectedBranchId = useCheckoutStore((state) => state.selectedBranchId);
   const branchPickedExplicitly = useCheckoutStore(
     (state) => state.branchPickedExplicitly,
@@ -318,7 +311,7 @@ export function CheckoutScreen() {
     !branchesQuery.isLoading &&
     !branchesQuery.isError &&
     (!hasBranchChoice || selectedBranchId !== null) &&
-    (!isDelivery || (selectedAddress !== null && noChangeAcknowledged));
+    (!isDelivery || selectedAddress !== null);
 
   // Lines from the same product sit together, with the extra packages indented
   // under the first.
@@ -346,8 +339,6 @@ export function CheckoutScreen() {
       }
       if (isDelivery && !selectedAddress) {
         toast.error(STRINGS.checkout.missingAddressToast);
-      } else if (isDelivery && !noChangeAcknowledged) {
-        toast.error(STRINGS.checkout.missingConsentToast);
       }
       return;
     }
@@ -396,7 +387,7 @@ export function CheckoutScreen() {
     return (
       <div className="flex min-h-dvh flex-col">
         <EmptyState
-          icon={ShoppingBag}
+          art="basket"
           title={STRINGS.empty.cart.title}
           action={{
             label: STRINGS.empty.cart.action,
@@ -625,18 +616,6 @@ export function CheckoutScreen() {
             </div>
           </div>
 
-          {isDelivery ? (
-            <label className="flex min-h-12 cursor-pointer items-center gap-3">
-              <Checkbox
-                checked={noChangeAcknowledged}
-                onCheckedChange={toggleNoChangeAcknowledged}
-              />
-              <Text as="span" variant="body-small" className="flex-1">
-                {STRINGS.checkout.noChangeAcknowledgement}
-              </Text>
-            </label>
-          ) : null}
-
           <div className="hidden md:block">
             <Button
               size="lg"
@@ -655,7 +634,7 @@ export function CheckoutScreen() {
         </aside>
       </div>
 
-      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background px-4 pt-3 pb-4 pb-safe md:hidden">
+      <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border bg-background px-4 pt-3 pb-safe-gutter md:hidden">
         <Button
           size="lg"
           className="w-full"
