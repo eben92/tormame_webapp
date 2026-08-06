@@ -25,14 +25,19 @@ import { useUserStore } from "@/stores/user";
 /** The code is always six digits — anything longer is a typo, not a code. */
 const CODE_MAX_LENGTH = 6;
 
-function TrackHeader({ onBack }: { onBack?: () => void }) {
+function TrackHeader({ showBack = false }: { showBack?: boolean }) {
   return (
     <header className="sticky top-0 z-40 flex h-14 shrink-0 items-center gap-2 border-b border-border bg-card px-4 pt-safe md:h-[4.5rem] md:px-8">
-      {onBack ? (
-        <button
-          type="button"
-          onClick={onBack}
-          aria-label={STRINGS.common.back}
+      {showBack ? (
+        // A link to the landing page rather than `router.back()` or a push:
+        // most people arrive here from an email or a bookmark, where "back" is
+        // either nothing at all or wherever they happened to be beforehand —
+        // for a customer part-way through onboarding, that is onboarding.
+        // `replace` keeps the tracking page from stacking up in history.
+        <Link
+          href="/"
+          replace
+          aria-label={STRINGS.track.backToHome}
           className={cn(
             "-ml-2 flex size-10 items-center justify-center rounded-full text-foreground",
             pressableScale,
@@ -40,7 +45,7 @@ function TrackHeader({ onBack }: { onBack?: () => void }) {
           )}
         >
           <ArrowLeft size={20} aria-hidden />
-        </button>
+        </Link>
       ) : null}
       <Link
         href="/"
@@ -146,7 +151,7 @@ export function TrackOrderScreen() {
   if (order) {
     return (
       <div className="flex min-h-dvh flex-col bg-background">
-        <TrackHeader onBack={() => router.push("/")} />
+        <TrackHeader showBack />
         <div className="mx-auto flex w-full max-w-[52rem] flex-1 flex-col gap-3 p-4 md:px-8">
           <div className="flex flex-col gap-0.5">
             <Text variant="h1">
@@ -180,7 +185,7 @@ export function TrackOrderScreen() {
 
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <TrackHeader onBack={() => router.push("/")} />
+      <TrackHeader showBack />
 
       <div className="mx-auto flex w-full max-w-[32rem] flex-1 flex-col gap-6 px-4 py-8 md:py-14">
         <div className="flex flex-col items-center gap-3 text-center">

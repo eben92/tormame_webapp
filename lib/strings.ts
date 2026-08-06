@@ -205,6 +205,7 @@ export const STRINGS = {
     linkExpired:
       'That tracking link is no longer valid. Enter your details below to find your order.',
     startOver: 'Track another order',
+    backToHome: 'Back to the home page',
     signedInHint: 'Signed in? Your orders are all in one place.',
     myOrders: 'Go to my orders',
     helpTitle: 'Where do I find my code?',
