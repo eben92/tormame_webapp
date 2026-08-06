@@ -175,6 +175,7 @@ export const STRINGS = {
     recaptchaAnd: 'and',
     recaptchaTerms: 'Terms of Service',
     recaptchaApply: 'apply.',
+    trackOrder: 'Track an order',
     legal: 'Legal',
     terms: 'Terms & conditions',
     privacy: 'Privacy policy',
@@ -182,6 +183,34 @@ export const STRINGS = {
     followUs: 'Follow us',
     paymentsTitle: 'We accept',
     rights: (year: number) => `© ${year} Tormame. All rights reserved.`,
+  },
+  /* The public order-tracking page: reachable without an account, from the
+     footer or from the link in the payment confirmation. */
+  track: {
+    title: 'Track your order',
+    subtitle:
+      'Enter the email or phone number you used, and the delivery code we sent you.',
+    contactLabel: 'Email or phone number',
+    contactPlaceholder: 'e.g. 0241234567',
+    codeLabel: 'Delivery or pickup code',
+    codePlaceholder: '6-digit code',
+    submit: 'Find my order',
+    searching: 'Looking for your order…',
+    contactRequired: 'Enter the email or phone number you used to order',
+    codeRequired: 'Enter the code we sent you',
+    notFound:
+      'We could not find an order with those details. Check them and try again — only orders that have been paid for can be tracked.',
+    throttled: 'Too many tries. Please wait a minute and try again.',
+    linkOpening: 'Opening your order…',
+    linkExpired:
+      'That tracking link is no longer valid. Enter your details below to find your order.',
+    startOver: 'Track another order',
+    backToHome: 'Back to the home page',
+    signedInHint: 'Signed in? Your orders are all in one place.',
+    myOrders: 'Go to my orders',
+    helpTitle: 'Where do I find my code?',
+    helpBody:
+      'It is the 6-digit delivery or pickup code in your order confirmation message.',
   },
   errors: {
     offlineTitle: "You're offline",

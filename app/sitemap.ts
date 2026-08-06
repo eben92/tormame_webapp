@@ -8,6 +8,8 @@ const STATIC_ROUTES = [
   "/explore",
   "/collection/popular",
   "/collection/trending",
+  // Public and useful to a customer searching for "track my Tormame order".
+  "/track",
 ];
 
 /** Policy pages: public, rarely changed, and worth indexing. */

@@ -120,6 +120,13 @@ export function LobbyFooter() {
               </Link>
             </li>
             <li>
+              {/* Deliberately high in the column: a customer chasing an order
+                  they placed as a guest has nowhere else to look. */}
+              <Link href="/track" className={footerLink}>
+                {STRINGS.footer.trackOrder}
+              </Link>
+            </li>
+            <li>
               <Link href="/help" className={footerLink}>
                 {STRINGS.footer.help}
               </Link>
