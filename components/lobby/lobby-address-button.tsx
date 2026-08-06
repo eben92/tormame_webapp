@@ -5,9 +5,11 @@ import { ChevronDown, MapPin } from "lucide-react";
 import { AddressSheet } from "@/components/shared/address-sheet";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { useGetAddresses } from "@/lib/api/services/addresses";
+import { addressLabel } from "@/lib/address-label";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { resolveSelectedAddress, useAddressStore } from "@/stores/address";
+import { useOnboardingStore } from "@/stores/onboarding";
 import { useUserStore } from "@/stores/user";
 
 /**
@@ -32,16 +34,14 @@ export function LobbyAddressButton({ className }: { className?: string }) {
     isLocalSelected,
   );
   const selectedAddress = resolved?.address ?? null;
-  const label = selectedAddress
-    ? `${selectedAddress.street}, ${selectedAddress.city}`
-    : STRINGS.lobby.changeLocation;
+  const city = useOnboardingStore((state) => state.city);
+  const label = addressLabel(selectedAddress, city, STRINGS.lobby.changeLocation);
+  const hasLocation = label !== STRINGS.lobby.changeLocation;
 
   const trigger = (
     <button
       type="button"
-      aria-label={
-        selectedAddress ? `${label}. ${STRINGS.lobby.addressHint}` : label
-      }
+      aria-label={hasLocation ? `${label}. ${STRINGS.lobby.addressHint}` : label}
       className={cn(
         "flex min-h-12 min-w-0 items-center gap-1.5 rounded-full bg-(--header-scrim-top) px-3 py-2",
         "hover:opacity-90 active:opacity-80",

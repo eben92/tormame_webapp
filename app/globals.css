@@ -262,6 +262,14 @@
   }
 }
 
+/* reCAPTCHA v3 runs invisibly, so its floating badge is hidden too — it is a
+   fixed-position block over the bottom-right corner, where the basket pill and
+   every sheet's controls live. Google's terms allow this only while the
+   required notice is shown instead; `LobbyFooter` carries it. */
+.grecaptcha-badge {
+  visibility: hidden;
+}
+
 @utility scrollbar-none {
   scrollbar-width: none;
   -ms-overflow-style: none;

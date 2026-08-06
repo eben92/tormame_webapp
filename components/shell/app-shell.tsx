@@ -132,6 +132,9 @@ function DesktopNavLinksFallback() {
 function DesktopHeader() {
   const router = useRouter();
   const user = useUserStore((state) => state.user);
+  // Same rule as the landing page: the session lands after the first paint, so
+  // "Sign in" waits until we actually know there is nobody signed in.
+  const hasHydrated = useUserStore((state) => state.hasHydrated);
   const [query, setQuery] = React.useState("");
 
   const handleSearch = (event: React.FormEvent) => {
@@ -175,7 +178,7 @@ function DesktopHeader() {
           <React.Suspense fallback={<DesktopNavLinksFallback />}>
             <DesktopNavLinks />
           </React.Suspense>
-          {!user ? (
+          {hasHydrated && !user ? (
             <Button size="sm" onClick={() => router.push("/auth/signin")}>
               {STRINGS.lobby.signIn}
             </Button>

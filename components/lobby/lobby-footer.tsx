@@ -203,6 +203,32 @@ export function LobbyFooter() {
         <p className="mt-8 font-sans text-xs text-white/50">
           {STRINGS.footer.rights(new Date().getFullYear())}
         </p>
+
+        {/* The badge itself is hidden (see `globals.css`); Google's terms allow
+            that only where this notice, with both links, is visible instead. */}
+        {ENV.RECAPTCHA_SITE_KEY ? (
+          <p className="mt-2 font-sans text-xs text-white/40">
+            {STRINGS.footer.recaptchaNotice}{" "}
+            <a
+              href="https://policies.google.com/privacy"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="underline hover:text-white/70"
+            >
+              {STRINGS.footer.recaptchaPrivacy}
+            </a>{" "}
+            {STRINGS.footer.recaptchaAnd}{" "}
+            <a
+              href="https://policies.google.com/terms"
+              target="_blank"
+              rel="noreferrer noopener"
+              className="underline hover:text-white/70"
+            >
+              {STRINGS.footer.recaptchaTerms}
+            </a>{" "}
+            {STRINGS.footer.recaptchaApply}
+          </p>
+        ) : null}
       </div>
     </footer>
   );
