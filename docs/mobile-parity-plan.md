@@ -1,0 +1,352 @@
+# Mobile → Web Parity Plan
+
+Port of the Expo/React Native app at `../quups_app` (product name **TORMAME**) to the Next.js 16 app in this repo.
+
+Status: **awaiting approval — no implementation started.**
+
+---
+
+## Part 1 — Mobile app inventory
+
+### 1.1 Stack (source of truth)
+
+| Concern | Mobile |
+|---|---|
+| Framework | Expo SDK 54, expo-router 6 (file routes), React 19.1, RN 0.81 |
+| Styling | NativeWind 4.2 + Tailwind 3 (`tailwind.config.js`, `global.css`) |
+| UI kit | shadcn-style primitives on `@rn-primitives/*` (`components.json`, style `new-york`) |
+| Server state | TanStack Query 5 |
+| Client state | Zustand 5 + immer + persist (AsyncStorage) |
+| Forms | React Hook Form 7 + `@hookform/resolvers` + Zod 4 |
+| Sheets | `@gorhom/bottom-sheet` 5 |
+| Toasts | `sonner-native` |
+| Icons | `lucide-react-native` + `iconsax-react-nativejs` |
+| Motion | `react-native-reanimated` 4 |
+
+### 1.2 Design tokens (`global.css` + `lib/theme.ts` — verbatim)
+
+Colors are declared as HSL triples in CSS vars with a hex mirror in `lib/theme.ts`. **Both files are the only place raw values exist; the web port must mirror the same values, not approximations.**
+
+**Light**
+
+| Token | HSL | Hex |
+|---|---|---|
+| `--background` | `60 23% 97%` | `#FAFAF7` |
+| `--foreground` | `156 18% 11%` | `#17211D` |
+| `--body` | `158 5% 31%` | `#4A524F` |
+| `--card` / `--popover` | `0 0% 100%` | `#FFFFFF` |
+| `--card-foreground` / `--popover-foreground` | `156 18% 11%` | `#17211D` |
+| `--primary` | `163 94% 24%` | `#047857` |
+| `--primary-foreground` | `0 0% 100%` | `#FFFFFF` |
+| `--primary-pressed` | `163 88% 20%` | `#065F46` |
+| `--primary-soft` | `152 81% 96%` | `#ECFDF5` |
+| `--secondary` / `--muted` | `60 15% 94%` | `#F1F1EC` |
+| `--secondary-foreground` | `156 18% 11%` | `#17211D` |
+| `--muted-foreground` | `171 3% 43%` | `#6B7271` |
+| `--accent` | `38 92% 50%` | `#F59E0B` |
+| `--accent-foreground` | `23 87% 14%` | `#451A03` |
+| `--destructive` | `0 74% 42%` | `#B91C1C` |
+| `--destructive-foreground` | `0 0% 100%` | `#FFFFFF` |
+| `--success` | `163 94% 24%` | `#047857` |
+| `--warning` | `26 90% 37%` | `#B45309` |
+| `--info` | `200 98% 32%` | `#0369A1` |
+| `--border` / `--input` | `60 10% 90%` | `#E8E8E3` |
+| `--ring` | `163 94% 24%` | `#047857` |
+
+**Dark** (`.dark:root`)
+
+| Token | HSL | Hex |
+|---|---|---|
+| `--background` | `150 16% 7%` | `#101613` |
+| `--foreground` | `60 10% 96%` | `#F5F5F1` |
+| `--body` | `150 6% 75%` | `#BCC4BF` |
+| `--card` / `--popover` | `150 8% 11%` | `#181E1B` |
+| `--primary` | `158 64% 52%` | `#34D399` |
+| `--primary-foreground` | `156 30% 8%` | `#0B1712` |
+| `--primary-pressed` | `160 84% 39%` | `#10B981` |
+| `--primary-soft` | `163 50% 14%` | `#123528` |
+| `--secondary` / `--muted` | `150 6% 15%` | `#222824` |
+| `--muted-foreground` | `150 5% 65%` | `#A0A8A3` |
+| `--accent` | `43 96% 56%` | `#FBBF24` |
+| `--destructive` | `0 74% 55%` | `#E5484D` |
+| `--warning` | `43 96% 56%` | `#FBBF24` |
+| `--info` | `199 89% 60%` | `#38BDF8` |
+| `--border` / `--input` | `150 8% 18%` | `#262D29` |
+| `--ring` | `158 64% 52%` | `#34D399` |
+
+**Radii:** `--radius: 1.5rem` (card 24), `--radius-image: 1rem` (16), `--radius-sheet: 2rem` (32), pill `999`. Tailwind exposes `rounded-card`, `rounded-image`, `rounded-sheet`, plus `lg = var(--radius)`, `md = calc(var(--radius) - 2px)`, `sm = calc(var(--radius) - 4px)`.
+
+**Typography** — Bricolage Grotesque (display/heading) + DM Sans (body). Families: `font-display` (800), `font-heading` (700), `font-heading-semi` (600), `font-sans` (DM Sans 400), `font-body-medium` (500), `font-body-bold` (700).
+
+Text scale (`components/ui/text.tsx`):
+
+| Variant | Spec |
+|---|---|
+| `display` | Bricolage 800, 32px / 38px, `text-foreground` |
+| `h1` | Bricolage 700, 26px / 32px |
+| `h2` | Bricolage 700, 22px / 28px |
+| `h3` | Bricolage 600, 18px / 24px |
+| `body` | DM Sans 400, 16px / 24px, `text-body` |
+| `body-strong` | DM Sans 700, 16px / 24px, `text-foreground` |
+| `body-small` | DM Sans 400, 14px / 20px, `text-body` |
+| `caption` | DM Sans 500, 12px, uppercase, tracking `0.06em`, `text-muted-foreground` |
+| `button` | DM Sans 700, 16px / 20px |
+
+**Motion:** `MOTION = { press: 120, base: 200, sheet: 280 }` ms. Press feedback everywhere = scale to 0.97 + opacity 0.9 over 120ms (`PressableScale`), disabled when reduced-motion is on.
+
+**Elevation** (shadow color `#17211D`):
+- `e1` — y1, blur 3, opacity .07
+- `e2` — y4, blur 14, opacity .10
+- `e3` — y12, blur 32, opacity .16
+
+**Overlays:** sheet scrim `rgba(16,22,19,0.5)`; photo header scrim gradient `rgba(16,22,19,0.5)` → `rgba(16,22,19,0.82)`. Splash brand background `#002923`.
+
+**Spacing/sizing conventions observed:** screen gutter 16px (`px-4`); section gap 24px (`gap-6`); card padding 16px; min touch target 48px (`min-h-12`) applied to every interactive row; tab bar 64px + safe area; rails gap 12px, gutter 16px; trending card width = 78% of viewport.
+
+### 1.3 Component inventory
+
+**`components/ui` (primitives)**
+
+| Component | Notes to reproduce |
+|---|---|
+| `text` | 9 variants above; context-based class inheritance (`TextClassContext`) |
+| `button` | pill (`rounded-full`); variants default / destructive / outline / secondary / ghost / link; sizes default h-48, sm h-44, lg h-56, icon 48×48; loading spinner inline; `dimmed` prop |
+| `input` | h-48, `rounded-full`, 1.5px border, focus border → primary; multiline variant → `rounded-card`, min-h-96, px-16/py-12; `InputWithIcon` (left/right), `PasswordInput` (eye toggle) |
+| `card` | `rounded-card`, 1px border, `bg-card`, py-16; Header/Title/Description/Content/Footer |
+| `badge` | pill, px-8/py-2, variants default (primary-soft) / secondary / destructive / outline / success / warning / failed / accent |
+| `skeleton` | `bg-muted animate-pulse rounded-image` |
+| `filter-chip` | `default`: active = primary-soft + primary/20 border, idle = muted, text 12px; `tab`: active = solid primary + bold 14px white, idle = card + border; min 48px height |
+| `numbers` (`QuantityStepper`) | pill on muted, two 48×48 round `bg-card` buttons, disabled at bounds at 40% opacity |
+| `pressable-scale` | universal tap wrapper (scale 0.97, 120ms, optional haptic) |
+| `bottom-sheet` | gorhom wrapper + `expandBottomSheetReliably` |
+| `otp-input`, `phone-input`, `amount-input` | phone = +233 prefix + Ghana validation |
+| `checkbox`, `switch`, `select`, `dropdown-menu`, `separator`, `label`, `icon`, `shell` | rn-primitives shadcn ports |
+| `states/empty-state` | 80px primary-soft circle + icon 36 + h3 + `lg` button, min-w-224 |
+| `states/error-state` | 80px destructive/10 circle, offline vs server icon, title + message + retry |
+| `states/skeleton-blocks` | `SkeletonCard`, `SkeletonRow`, `SkeletonHero` |
+
+**`components/shared` (composites)**
+`cards/store-card` (portrait 196×150 + landscape row 72px thumb), `cards/trending-card` (+skeleton, 16:9), `cards/product-card` (fixed-height menu row, 72px image, qty pill), `cards/order-card`, `cards/search-product-card`, `cards/search-store-header`, `cards/search-view-all-card`, `section-header`, `category-chip-rail` (auto-centers active chip), `home-promo-section`, `global-cart-bar` (floating pill above tab bar), `order-status-badge`, `order-status-timeline`, `star-picker`, `rating-sheet`, `address-bottom-sheet`, `address-form-sheet`, `branch-bottom-sheet`, `city-sheet`, `city-row-list`, `variant-selector-sheet` (616 lines — variants + modifier groups + qty + add-to-basket), `countdown-unit`, `splash-cover`, `tab-icon-with-dot`, `header/stack-header`.
+
+**`components/shop`**: `shop-banner`, `shop-category-bar` (sticky tabs synced to scroll offsets), `shop-section-header`.
+**`components/lobby`**: `category-bubbles`. **`components/onboarding`**: `city-wheel` (native wheel picker).
+
+### 1.4 Screen inventory + flows
+
+Entry: `app/index.tsx` — 2s brand splash, waits for store hydration (3s cap), then routes: onboarded → `/home` (signed in) or `/lobby`; not onboarded + signed in → adopt city from default address → `/home`, else `/onboarding?mode=city-only`; otherwise `/onboarding`.
+
+| # | Route (mobile) | Purpose | States |
+|---|---|---|---|
+| 1 | `/onboarding` | 3 steps: city wheel → name → phone; `mode=city-only` collapses to step 1; success overlay 900ms | cities loading / load-error / success |
+| 2 | `/lobby` | Guest hero: gradient, address pill, category bubbles, sign-in / start-browsing. Auto-redirects to `/home` if only 1 category | loading, redirect |
+| 3 | `/auth/signin` | Phone/email segmented toggle, password, forgot link, terms | idle / error banner / pending |
+| 4 | `/auth/register` | name, email, phone, password, terms checkbox | same |
+| 5 | `/auth/forgot-password` → `/otp` → `/reset` | request code → verify → new password (resend w/ countdown) | pending, invalid OTP, toasts |
+| 6 | `/home` (tab) | Address pill, search entry, persistent category rail, promo, "Popular near you" rail, "Trending now" snap rail; category param switches to vertical store list | loading skeletons, per-rail error row, empty, refetch |
+| 7 | `/explore` (tab) | Debounced (300ms) global search → store groups with product rails + "view all"; idle = category chips + trending tags | skeleton, error, empty, infinite scroll |
+| 8 | `/orders` (tab) | Active / Past / Cancelled chips, order rows with pay/verify CTA, 15s polling while active orders exist | guest view, skeleton, error, empty, infinite scroll |
+| 9 | `/profile` (tab) | Guest gradient hero or auth header; menu sections (Discover / My account / App / Support), city sheet, sign out | logging out |
+| 10 | `/shops/[slug]` | Hero banner w/ scrim, collapsing header, sticky category bar synced to menu offsets, product rows, in-shop search, variant sheet, cross-store basket confirm | loading, not-found, empty, search-empty |
+| 11 | `/collection/[sort]` | See-all list for popular/trending | loading, error, empty, load-more error |
+| 12 | `/checkout` | Delivery/Pickup toggle, address or branch selector, grouped basket lines w/ steppers, drop-off instruction chips + note, service fee (2%, min GH₵1), totals, place order | empty basket, branch load failure, missing address/consent toasts, pending |
+| 13 | `/order-payment` | Paystack authorization URL in a WebView + callback capture | pending / success / failure |
+| 14 | `/order-confirmation` | Success screen w/ confirmation code | — |
+| 15 | `/order-details/[id]` | Status banner + timeline, items, address/branch, code, totals, pay/verify CTA, rating sheet; polls 15s (4s while payment pending) | loading, error, ratable |
+| 16 | `/addresses` | Saved address list, default badge, edit/remove, add sheet | loading, error, empty |
+| 17 | `/personal-info` | Profile form + change-password form | field errors, toasts |
+| 18 | `/settings` | Theme preference (system/light/dark), push switch, legal links, version | — |
+| 19 | `/help` | Contact card + 5-item FAQ accordion | — |
+| 20 | `/web` | In-app browser for terms/privacy | — |
+| 21 | `/callback/[slug]` | Payment/deep-link callback router | — |
+
+All static copy lives in `lib/strings.ts` — it ports across verbatim.
+
+### 1.5 API layer
+
+- **Base URL:** `ENV.BACKEND_URL`, effective value `https://staging.api.quups.app/v1` (verified 200). See ambiguity A1.
+- **Envelope:** `{ data, status, message, timestamp }`. Paginated: `{ meta: { page, limit, total_records, total_pages }, data: [] }` — **except `/orders`**, which returns `{ meta: { total, limit, offset }, data }`.
+- **Auth:** `Authorization: Bearer <access_token>`; on 401 (outside the login/register/otp/logout endpoints) a single-flight refresh hits `POST /auth/refresh-token` with `{ refresh_token }`, retries once, else clears session.
+- **Errors:** thrown `Error` with `message` from `errBody.message || errBody.error` and a `status` field; `classifyApiError` maps `TypeError` → offline, ≥500 → server, else client.
+- **Query defaults:** retry 3, but any error whose message is `unauthorized` logs out immediately (queries and mutations).
+
+Endpoints in use:
+
+| Method | Path | Used by |
+|---|---|---|
+| POST | `/auth/signin`, `/auth/register`, `/auth/refresh-token`, `/logout` | auth |
+| POST | `/auth/forgot-password/request?msisdn=`, `/auth/forgot-password/validate-otp`, `/auth/forgot-password`, `/auth/forgot-password/resend-otp?msisdn=` | password reset |
+| GET | `/cities` (staleTime 24h, infinite retry w/ backoff) | onboarding, city sheet |
+| GET | `/categories/grouped` | home, explore, lobby |
+| GET | `/companies?sort=&category_vertical=&city=&limit=&offset=` (staleTime 60s) | home rails, collection |
+| GET | `/companies/{id}`, `/shops/{id}?city=`, `/shops/{id}/branches` (staleTime 1h) | shop, checkout |
+| GET | `/companies/{id}/menu`, `/company-categories?company_id=`, `/products?company_id=…`, `/products/{id}` | shop, variant sheet |
+| GET | `/search?search=&city=&limit=&offset=` | explore |
+| GET/POST/PUT/DELETE | `/me/addresses`, `/me/addresses/{id}` | addresses, checkout |
+| PUT | `/me`, POST `/me/change-password` | personal info |
+| POST | `/orders`; GET `/orders?statuses=&limit=&offset=`; GET `/orders/{id}` | orders |
+| GET | `/orders/{id}/payment/authorization`; POST `/orders/{id}/payment/callback?reference=` | payment |
+| GET/PUT | `/orders/{id}/rating` (404 = not rated) | rating |
+| — | `/push/*` | native only, **out of scope for web** |
+
+### 1.6 Client stores (to port)
+
+`user` (tokens + profile, persisted, hydration flag), `onboarding` (city, name, phone, hasOnboarded, v1 migration), `cart` (storeId + composite `packageKey` line items, single-store rule), `address` (selected saved / local address), `checkout` (fulfillment, drop-off, branch, consent — not persisted), `settings` (theme preference, push flags), `product-sheet` (open flag), `category-order`.
+
+---
+
+## Part 2 — Web app: current state
+
+Bare `create-next-app`: Next **16.3.0**, React 19.2, Tailwind **v4** (CSS-first `@theme`, no `tailwind.config`), `app/{layout,page,globals.css}`, Geist fonts, ESLint flat config, pnpm. No providers, no components, no API layer, no shadcn, no `src` dir, no path alias beyond default. `.env` has `NEXT_PUBLIC_BACKEND_URL=https://staging.api.quups.com` (unreachable — see A1).
+
+Per `AGENTS.md`, I will read `node_modules/next/dist/docs/01-app/**` for the routing/data/metadata/proxy chapters before writing code, since this Next version deviates from training data.
+
+---
+
+## Part 3 — Build plan
+
+### 3.1 Foundation (before any page)
+
+1. **Tokens.** `app/globals.css`: port every CSS var above verbatim into `:root` / `.dark`, expose them through Tailwind v4 `@theme inline` (`--color-primary: hsl(var(--primary))`, `--radius-card`, `--radius-image`, `--radius-sheet`, `--shadow-e1/e2/e3`, motion durations `--duration-press/base/sheet`). Fonts via `next/font/google` (Bricolage Grotesque 600/700/800, DM Sans 400/500/700) bound to `--font-display` / `--font-sans`. Dark mode via `next-themes` (`class` strategy) so `settings.themePreference` maps 1:1.
+2. **Typography primitive.** `components/ui/text.tsx` — same 9 variants, rendering real semantic elements (`h1`/`h2`/`h3`/`p`/`span`).
+3. **shadcn init** (`components.json`, new-york, CSS vars) then add: button, input, form, label, checkbox, switch, select, dropdown-menu, separator, badge, card, skeleton, sheet, drawer (vaul), dialog, tabs, accordion, sonner, avatar, scroll-area, tooltip. **Every one is then rewritten** to the mobile spec (pill radii, 48px heights, 1.5px borders, DM Sans weights, primary-pressed active states, 120ms press scale).
+4. **Interaction parity:** `PressableScale` web equivalent (`active:scale-[0.97] transition-transform duration-[120ms]`, `motion-reduce:` guard) applied through the button/pressable primitives.
+5. **API client** `lib/api/client.ts`: `apiFetch<T>(endpoint, { schema, ...init })` — envelope unwrap, bearer header, single-flight refresh + one retry, `ApiError { status, message }`, `classifyApiError`/`getErrorCopy` ported. Every response validated with Zod; types inferred (`z.infer`), zero hand-written duplicates. Schemas live in `lib/api/schemas/*` mirroring `services/*/type.ts`.
+6. **Query layer** `lib/query-client.ts` + `providers.tsx`: same retry/logout rule, per-hook `staleTime`/`refetchInterval` copied exactly (cities 24h, companies 60s, branches 1h, orders 15s/4s polling, `refetchIntervalInBackground: false`).
+7. **Stores:** port the six Zustand stores with `persist` on `localStorage` + `skipHydration`/mounted guard to avoid SSR mismatch.
+8. **Copy:** port `lib/strings.ts` verbatim.
+9. **App shell:** `app/layout.tsx` (metadata, fonts, theme, providers), route groups `(lobby)` / `(protected)`, `loading.tsx` + `error.tsx` per segment, `not-found.tsx`, global error boundary.
+
+### 3.2 Responsive strategy (defined once)
+
+Mobile-first. **One breakpoint that matters: `md` = 768px.**
+
+- **< 768px — pixel parity.** Everything renders at the mobile app's exact sizes: 16px gutters, 48px touch targets, the same type scale (no `md:text-sm` shrink shadcn ships with), fixed bottom tab bar (64px + `env(safe-area-inset-bottom)`), stack headers with back buttons, bottom sheets via **vaul** `Drawer` (rounded-sheet top, same scrim `rgba(16,22,19,0.5)`, 280ms), floating cart bar above the tab bar, horizontal snap rails via CSS scroll-snap.
+- **≥ 768px — desktop marketplace, in the Glovo / Deliveroo / Bolt Food idiom.** The bottom tab bar is replaced by a **sticky top header**: logo, address selector (opens the same address picker as a dialog), a live search field, then Orders + account menu on the right. Below it a horizontal category rail. Listing pages (`/home`, `/collection`, `/explore` results) become **left filter/category rail + wide store grid** (2 cols at md, 3 at lg, 4 at xl) inside a `max-w-[1280px]` container with 32px gutters. Shop page = sticky menu-category sidebar + product grid + sticky basket panel on the right (Deliveroo pattern). Checkout = two columns, form left, sticky order summary right. Order details = content left, sticky status timeline right. Orders list = denser rows with inline status + total columns. Bottom sheets become `Dialog`s (address / branch / variant); the floating cart bar becomes the sticky basket panel. Hover states on every card (image scale + shadow lift using `--shadow-e2`).
+- `lg` (1024) / `xl` (1280) only widen the grid; no third layout system.
+- Design language, tokens, and copy are identical across both — only layout and density change.
+
+### 3.3 Route map
+
+| Mobile | Web |
+|---|---|
+| `/` splash+router | `/` — server redirect shell + client bootstrap (no 2s artificial splash on web) |
+| `/onboarding` | `/onboarding` |
+| `/lobby` | `/lobby` |
+| `/auth/*` | `/(lobby)/auth/*` |
+| `/home` | `/home` (tab → sidebar item) |
+| `/explore` | `/explore` |
+| `/orders` | `/orders` |
+| `/profile` | `/profile` |
+| `/shops/[slug]` | `/shops/[slug]` (async `params`) |
+| `/collection/[sort]` | `/collection/[sort]` |
+| `/checkout` | `/checkout` |
+| `/order-payment` (WebView) | full-page redirect to Paystack `authorization_url`; return via `/callback/[slug]` |
+| `/order-confirmation`, `/order-details/[id]`, `/addresses`, `/personal-info`, `/settings`, `/help` | same paths |
+| `/web?uri=` (WebView) | plain external links |
+
+### 3.4 Page order (each page complete before the next)
+
+Per page: build UI → wire TanStack Query + Zod → RHF forms → Chrome DevTools MCP end-to-end test (interactions, network, console) → visual check at 390px and 1440px against the mobile screen → full flow test → mark done here.
+
+1. Foundation (3.1) — not a page, but gated the same way
+2. `/lobby`
+3. `/auth/signin`
+4. `/auth/register`
+5. `/auth/forgot-password` (+ otp, reset)
+6. `/onboarding`
+7. `/home`
+8. `/explore`
+9. `/shops/[slug]` (+ variant sheet)
+10. `/collection/[sort]`
+11. `/checkout` (+ address & branch sheets)
+12. payment redirect + `/callback` + `/order-confirmation`
+13. `/orders`
+14. `/order-details/[id]` (+ rating)
+15. `/profile`
+16. `/addresses`
+17. `/personal-info`
+18. `/settings`
+19. `/help`
+20. Full-app pass: every route, both viewports, console/hydration/network/layout-shift sweep, then `pnpm build` + lint + typecheck clean
+
+### 3.5 Explicitly out of scope (native-only)
+
+Push notifications and the unread tab dot, haptics, expo splash/confetti/Skia, in-app WebView, `react-native-view-shot`. The push service layer is not ported; the Orders tab renders without the unread dot.
+
+---
+
+## Part 4 — Ambiguities / decisions needed
+
+**A1 — API base URL. DECIDED:** `NEXT_PUBLIC_BACKEND_URL=https://staging.api.quups.app/v1` (verified `GET /v1/cities` → 200). The `.com` value in `.env` gets replaced.
+
+**A2 — Token storage. DECIDED:** `localStorage` via Zustand `persist`, mirroring the mobile AsyncStorage flow — same single-flight refresh, no Next proxy layer.
+
+**A3 — Desktop shell. DECIDED:** Glovo / Deliveroo / Bolt Food idiom — sticky top header (logo, address selector, search, orders, account), category rail, filter rail + wide store grid, sticky basket panel on shop pages. Detailed in §3.2.
+
+**A4 — `gpt-taste` scope. DECIDED:** applied to `/lobby` only (the guest landing surface) — its GSAP motion, editorial spacing and layout variance run there, but still on **brand tokens and brand fonts**: Bricolage Grotesque + DM Sans stay, the emerald/cream palette stays. Its font list (Satoshi/Cabinet Grotesk) and "invent your own values" latitude are overridden by the verbatim-token rule. Every signed-in product screen stays parity-exact and skips the skill.
+
+**A5 — Payment.** Mobile opens Paystack in a WebView and intercepts the callback. On web I'll do a full-page redirect to `authorization_url` and handle the return at `/callback/[slug]`, then `POST /orders/{id}/payment/callback?reference=`. Confirm that the Paystack callback URL registered for staging can return to the web origin.
+
+**A6 — City wheel.** Onboarding step 1 uses a native wheel picker. Web equivalent: a scroll-snap column list with the same visual centering (not a `<select>`), so it still reads as the mobile step. Flagging since it can't be identical.
+
+**A7 — Brand name.** Copy says "TORMAME", the repo is "quups". Porting `strings.ts` verbatim keeps TORMAME everywhere. Confirm that's intended for web.
+
+**A8 — Auth-guard behaviour.** Mobile `(protected)` renders guest views inline (home/orders/profile all work signed-out) rather than redirecting. Web will do the same — no middleware redirect — so guests can browse and are prompted at checkout.
+
+---
+
+## Part 5 — Progress log
+
+| Page | UI | API | Forms | DevTools test | Design review | Done |
+|---|---|---|---|---|---|---|
+| Foundation (tokens, primitives, API client, stores, shell) | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/lobby` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/auth/signin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/auth/register` | ✅ | ✅ | ✅ | partial | ✅ | |
+| `/auth/forgot-password` (+ reset) | ✅ | ✅ | ✅ | partial | ✅ | |
+| `/onboarding` | | | | | | |
+| `/home` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/explore` | | | | | | |
+| `/shops/[slug]` | | | | | | |
+| `/collection/[sort]` | | | | | | |
+| `/checkout` | | | | | | |
+| payment redirect + `/callback` + `/order-confirmation` | | | | | | |
+| `/orders` | | | | | | |
+| `/order-details/[id]` | | | | | | |
+| `/profile` | | | | | | |
+| `/addresses` | | | | | | |
+| `/personal-info` | | | | | | |
+| `/settings` | | | | | | |
+| `/help` | | | | | | |
+
+### Foundation — what landed
+
+- `app/globals.css` — every mobile token verbatim (light + dark), radii, `--shadow-e1/e2/e3`, motion durations, scrims, `pb-safe`/`pt-safe`/`scrollbar-none` utilities.
+- Fonts: Bricolage Grotesque + DM Sans via `next/font/google`, bound to `--font-display` / `--font-sans`.
+- shadcn (radix base, nova style) initialised; button, input, badge, card, skeleton, drawer, dialog rewritten to the mobile spec (48dp pill button, 1.5px pill input, 32px sheet radius, ink scrim, 120ms press-scale). `Text`, `FilterChip`, `QuantityStepper`, `EmptyState`/`ErrorState`/skeleton blocks, `ResponsiveSheet` (drawer under 768px, dialog above) added.
+- `lib/api/client.ts` — envelope unwrap, bearer, single-flight refresh + one replay, `ApiError`/`ApiSchemaError`; every response validated by Zod (`lib/api/schemas/*`), types inferred.
+- Stores ported: user, onboarding, cart, address, checkout, category-order — `localStorage` persist with explicit hydration in `Providers`.
+- Copy (`lib/strings.ts`) and pure helpers (order-status, city, branch, collection, store-image, search-rail, category-icons, payment-cta) ported.
+- `.env` now points at `https://staging.api.quups.app/v1`; `.env.example` documents every variable.
+
+### Auth — verified
+
+Sign-in: phone/email segmented toggle, +233-locked phone field, password reveal, sticky footer on mobile / centred card on desktop. Empty-submit validation shows the mobile's exact messages; a real 401 from staging renders the server's message in the banner; a real sign-in stores tokens, maps the profile, and runs the post-login city adoption (verified in localStorage).
+
+Register and forgot-password/reset are built with the same schemas and copy as mobile (name ≥ 2, email, Ghana phone, password ≥ 6, terms required; reset: 6-digit OTP, password ≥ 6, confirmation match) and reviewed visually in light and dark. Their success paths are **not** end-to-end tested: registering would create a real staging account, and the reset flow needs a live SMS code.
+
+Substitution to note: the tab-bar and menu icons use lucide equivalents of the mobile app's iconsax set (Element3 → LayoutGrid, Discover → Compass, Bag → ShoppingBag, Profile → User). Shapes differ slightly; weights and sizes match.
+
+### `/lobby` — verified
+
+Mobile 390×844: gradient shell, address pill, scrim hero card, 4-per-row bubbles, image band, footer CTAs — matches the native screen. Desktop 1440×900: floating nav pill, cinematic hero with photo wash, two-line headline, category board (gpt-taste applied here only, on brand tokens/fonts).
+
+### `/home` — verified
+
+Mobile: address pill, search entry, persistent category rail, promo hero, "Popular near you" rail and the snap-scrolling "Trending now" rail with the next card peeking (a `scroll-px-4` fix was needed — scroll snapping was eating the 16px gutter). Bottom tab bar at 64px + safe area. Desktop: sticky marketplace header (logo, address, search, Explore/Orders/Profile), category rail, promo band, and 4-column grids inside a 1280px container.
+
+Live API: two sorted `GET /companies` queries (popular + trending, 60s staleTime, city-scoped) plus `GET /categories/grouped`; category chips switch to the vertical-scoped list with its own loading/empty/error states and per-rail retry rows.
+
+### `/lobby` — API
+
+Live API: `GET /categories/grouped` drives the bubbles; `GET /cities` drives the city picker; guest address saves to the device and the pill reflects it after reload. Address form runs RHF + Zod with the mobile's messages. Console clean (an `aria-hidden`/focus warning was fixed by making the pill the sheet's own trigger and enabling `autoFocus`). `pnpm build`, `pnpm lint`, `tsc --noEmit` all clean.

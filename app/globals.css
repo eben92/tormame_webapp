@@ -1,26 +1,201 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
+@custom-variant dark (&:is(.dark *));
+
+/*
+  Emerald & Cream design tokens — ported verbatim from the mobile app
+  (quups_app/global.css + quups_app/lib/theme.ts). THE only place raw colour,
+  radius, elevation and motion values exist. Never hardcode a hex or px in a
+  component; add a token here instead.
+*/
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-body: var(--body);
+
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-pressed: var(--primary-pressed);
+  --color-primary-soft: var(--primary-soft);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-info: var(--info);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-sidebar: var(--card);
+  --color-sidebar-foreground: var(--foreground);
+  --color-sidebar-primary: var(--primary);
+  --color-sidebar-primary-foreground: var(--primary-foreground);
+  --color-sidebar-accent: var(--muted);
+  --color-sidebar-accent-foreground: var(--foreground);
+  --color-sidebar-border: var(--border);
+  --color-sidebar-ring: var(--ring);
+
+  /* Radii — cards 24, images 16, sheet tops 32, pills full. */
+  --radius-card: var(--radius);
+  --radius-image: var(--radius-image);
+  --radius-sheet: var(--radius-sheet);
+  --radius-lg: var(--radius);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-xl: calc(var(--radius) * 1.4);
+  --radius-2xl: calc(var(--radius) * 1.8);
+
+  /* Elevation — shadow ink #17211D, matching ELEVATION in lib/theme.ts. */
+  --shadow-e1: 0 1px 3px 0 rgb(23 33 29 / 0.07);
+  --shadow-e2: 0 4px 14px 0 rgb(23 33 29 / 0.1);
+  --shadow-e3: 0 12px 32px 0 rgb(23 33 29 / 0.16);
+
+  --font-sans: var(--font-dm-sans);
+  --font-display: var(--font-bricolage);
+  --font-heading: var(--font-bricolage);
+
+  --animate-sheet-up: sheet-up var(--duration-sheet) var(--ease-standard);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+:root {
+  /* Light */
+  --background: hsl(60 23% 97%);
+  --foreground: hsl(156 18% 11%);
+  --body: hsl(158 5% 31%);
+  --card: hsl(0 0% 100%);
+  --card-foreground: hsl(156 18% 11%);
+  --popover: hsl(0 0% 100%);
+  --popover-foreground: hsl(156 18% 11%);
+  --primary: hsl(163 94% 24%);
+  --primary-foreground: hsl(0 0% 100%);
+  --primary-pressed: hsl(163 88% 20%);
+  --primary-soft: hsl(152 81% 96%);
+  --secondary: hsl(60 15% 94%);
+  --secondary-foreground: hsl(156 18% 11%);
+  --muted: hsl(60 15% 94%);
+  --muted-foreground: hsl(171 3% 43%);
+  --accent: hsl(38 92% 50%);
+  --accent-foreground: hsl(23 87% 14%);
+  --destructive: hsl(0 74% 42%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(163 94% 24%);
+  --warning: hsl(26 90% 37%);
+  --info: hsl(200 98% 32%);
+  --border: hsl(60 10% 90%);
+  --input: hsl(60 10% 90%);
+  --ring: hsl(163 94% 24%);
+
+  --radius: 1.5rem;
+  --radius-image: 1rem;
+  --radius-sheet: 2rem;
+
+  /* Motion — MOTION in lib/theme.ts. */
+  --duration-press: 120ms;
+  --duration-base: 200ms;
+  --duration-sheet: 280ms;
+  --ease-standard: cubic-bezier(0.32, 0.72, 0, 1);
+
+  /* Scrims consumed as raw values by overlays and photo headers. */
+  --overlay: rgb(16 22 19 / 0.5);
+  --header-scrim-top: rgb(16 22 19 / 0.5);
+  --header-scrim-bottom: rgb(16 22 19 / 0.82);
+  --splash-background: #002923;
+
+  /* Layout rhythm shared by the mobile shell and the desktop shell. */
+  --screen-gutter: 1rem;
+  --tab-bar-height: 4rem;
+  --desktop-header-height: 4.5rem;
+}
+
+.dark {
+  --background: hsl(150 16% 7%);
+  --foreground: hsl(60 10% 96%);
+  --body: hsl(150 6% 75%);
+  --card: hsl(150 8% 11%);
+  --card-foreground: hsl(60 10% 96%);
+  --popover: hsl(150 8% 11%);
+  --popover-foreground: hsl(60 10% 96%);
+  --primary: hsl(158 64% 52%);
+  --primary-foreground: hsl(156 30% 8%);
+  --primary-pressed: hsl(160 84% 39%);
+  --primary-soft: hsl(163 50% 14%);
+  --secondary: hsl(150 6% 15%);
+  --secondary-foreground: hsl(60 10% 96%);
+  --muted: hsl(150 6% 15%);
+  --muted-foreground: hsl(150 5% 65%);
+  --accent: hsl(43 96% 56%);
+  --accent-foreground: hsl(23 87% 14%);
+  --destructive: hsl(0 74% 55%);
+  --destructive-foreground: hsl(0 0% 100%);
+  --success: hsl(158 64% 52%);
+  --warning: hsl(43 96% 56%);
+  --info: hsl(199 89% 60%);
+  --border: hsl(150 8% 18%);
+  --input: hsl(150 8% 18%);
+  --ring: hsl(158 64% 52%);
+}
+
+@keyframes sheet-up {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@layer base {
+  * {
+    @apply border-border outline-ring/50;
+  }
+
+  html {
+    @apply font-sans;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  body {
+    @apply bg-background text-body;
+    text-rendering: optimizeLegibility;
+  }
+
+  /* The mobile app never shows a horizontal scrollbar; rails scroll internally. */
+  body {
+    overflow-x: hidden;
+  }
+}
+
+@utility scrollbar-none {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+/* Safe-area helpers — the mobile app pads by the device inset; on web this is
+   0 everywhere except installed PWAs and iOS Safari. */
+@utility pb-safe {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+@utility pt-safe {
+  padding-top: env(safe-area-inset-top);
 }
