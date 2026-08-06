@@ -467,3 +467,40 @@ The page in `quups_web` stays where it is — this one is additive, and the back
 The lookup is public and takes a reference, so it is worth protecting. `/payment-redirect` runs an invisible reCAPTCHA v3 check (`hooks/use-recaptcha.ts`) and has the server verify the token at `app/api/recaptcha` — the secret never reaches the browser, which is the only reason that route exists. Score threshold is Google's default 0.5, and the action is checked against the token.
 
 Two deliberate escape hatches: with no keys configured the check is skipped (local development shouldn't need Google credentials), and if Google itself is unreachable the client passes rather than stranding someone who has just paid — the server-side check is what actually gates abuse. Keys go in `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY`; both are documented in `.env.example`.
+
+---
+
+## Onboarding: a real drum picker
+
+The town step is a plain, borderless `<select>` in a filled pill. A custom drum picker was built first and then dropped: every phone already presents a native picker for a `<select>` (on iOS, the system drum), so the custom one added code, a scroll-settle race and a keyboard model without adding anything a customer noticed.
+
+## Lobby, redesigned
+
+The lobby has been through three shapes. It started as the native screen scaled up (a boxed scrim card, a four-per-row icon grid, a photo strip), then became a cluster of floating bubbles, and is now a **service grid in the Snoonu idiom** — the shape asked for last, and the one a marketplace customer already knows from every other delivery app.
+
+**The page.** A green brand block at the top — logo and wordmark, sign in, the badge, the headline, a search bar and the address pill — with a rounded bottom edge, and below it the shop floor on the cream background: the section heading, the tile grid, the rearrange hint, then the actions. It scrolls, on both viewports. Same structure at every width; only the gutters, type sizes and the placement of the address pill change. The search bar is a button, not a field: search lives on the store list, and asking someone to type before we know their city gets them nowhere.
+
+**The tiles.** `CategoryTiles` — a `grid-flow-dense` grid, two columns on a phone and four on desktop. The first tile in the customer's order is featured (full width on the phone, a 2×2 block on desktop), the second widens to two columns on desktop, which squares the grid off with no dead cells. Each tile carries the vertical's name, a one-line blurb, a picture of the goods bleeding off the bottom-right corner, and an arrow chip — so nothing on the page has to be guessed at.
+
+Order is still the customer's: press and hold a tile for 220ms to drag it (dnd-kit sortable, `rectSortingStrategy`), and the arrangement persists locally. A plain tap still opens the category. Two things that follow from that:
+
+- `DndContext` is given a fixed `id`. Without one, dnd-kit generates the `aria-describedby` ids from a counter that starts over on the client, and the page hydrates with a mismatch.
+- Before anyone has rearranged anything, the order comes from `sortCategoriesByDefault` (Food, Grocery, Pharmacy, …), not from the API. `/categories/grouped` returns its verticals in no guaranteed order, and a lobby whose big tile changes on every reload looks broken.
+
+Every tile's art loads eagerly rather than lazily — all of them are above the fold, and a saved order can promote any one of them into the featured slot after hydration.
+
+The tile washes are tokens (`--tile-food` and friends in `app/globals.css`, light and dark), not per-component colours. They are web-only: the native lobby has no such grid.
+
+`components/lobby/category-bubbles.tsx` and `category-constellation.tsx` were both deleted rather than left beside their replacements.
+
+### Category artwork, not icons
+
+The tiles show the goods themselves — a burger, a grocery bag, a capsule, a phone. A line icon asks to be decoded; a picture of a meal does not, which matters for a customer whose first delivery app this is.
+
+The art lives in `public/categories/` and is mapped by vertical in `lib/category-art.ts`, together with each vertical's wash and blurb, with a neutral shopping-bag fallback for anything we don't recognise. **The current files are illustrations I authored as stand-ins.** Replacing them with commissioned 3D renders is a file drop: same paths, square canvas, transparent background — only the extension in that map changes.
+
+Photography was tried first and abandoned: `/companies?category_vertical=…` returns zero stores for every vertical except Food on staging, so there is nothing real to show per category yet. When the catalogue fills out, real store photography is the better answer and worth revisiting.
+
+### Buttons that look like buttons
+
+The lobby's calls to action were a transparent outline and a flat white pill, and they read as labels. Now: a full-width white primary with an arrow and an `e2` shadow, and a full-width glass secondary with a border — stacked rather than side by side, so neither is squeezed. Same treatment on the desktop hero.

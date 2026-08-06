@@ -3,20 +3,24 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { Loader2 } from "lucide-react";
+import { ArrowRight, Loader2, Search } from "lucide-react";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
-import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { CategoryBubbles } from "@/components/lobby/category-bubbles";
+import { focusRing, pressableScale } from "@/components/ui/pressable";
+import { CategoryTiles } from "@/components/lobby/category-tiles";
 import { LobbyAddressButton } from "@/components/lobby/lobby-address-button";
 import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
-import { useGetCategories, type CategoryChip } from "@/lib/api/services/catalog";
+import {
+  useGetCategories,
+  type CategoryChip,
+} from "@/lib/api/services/catalog";
 import { STRINGS } from "@/lib/strings";
+import { cn } from "@/lib/utils";
 
-gsap.registerPlugin(useGSAP, ScrollTrigger);
+gsap.registerPlugin(useGSAP);
 
 function BrandMark({ size = 30 }: { size?: number }) {
   return (
@@ -36,8 +40,22 @@ function BrandMark({ size = 30 }: { size?: number }) {
   );
 }
 
+/** Deep-green header canvas with two soft light sources — the brand's block. */
+function Ambience() {
+  return (
+    <div
+      aria-hidden
+      className="pointer-events-none absolute inset-0 overflow-hidden"
+    >
+      <div className="absolute inset-0 bg-linear-to-br from-primary-pressed via-primary to-primary-pressed" />
+      <div className="absolute -top-24 -left-20 size-72 rounded-full bg-white/12 blur-3xl" />
+      <div className="absolute -right-24 -bottom-28 size-80 rounded-full bg-accent/20 blur-3xl" />
+    </div>
+  );
+}
+
 export function LobbyScreen({
-  /** Verticals prerendered on the server — the lobby paints with its bubbles. */
+  /** Verticals prerendered on the server — the lobby paints with its grid. */
   initialCategories,
 }: {
   initialCategories?: CategoriesGroup[] | null;
@@ -45,6 +63,7 @@ export function LobbyScreen({
   const router = useRouter();
   const { data, isLoading } = useGetCategories(initialCategories);
   const categories = React.useMemo<CategoryChip[]>(() => data ?? [], [data]);
+  const root = React.useRef<HTMLDivElement>(null);
 
   const handleCategoryPress = (categoryId: string) =>
     router.push(`/home?category=${categoryId}`);
@@ -55,6 +74,24 @@ export function LobbyScreen({
   React.useEffect(() => {
     if (shouldRedirectHome) router.replace("/home");
   }, [shouldRedirectHome, router]);
+
+  useGSAP(
+    () => {
+      const reduceMotion = window.matchMedia(
+        "(prefers-reduced-motion: reduce)",
+      ).matches;
+      if (reduceMotion) return;
+
+      gsap.from("[data-animate='intro']", {
+        y: 20,
+        opacity: 0,
+        duration: 0.55,
+        ease: "power3.out",
+        stagger: 0.08,
+      });
+    },
+    { scope: root, dependencies: [isLoading] },
+  );
 
   if (isLoading || shouldRedirectHome) {
     return (
@@ -68,231 +105,129 @@ export function LobbyScreen({
   }
 
   return (
-    <>
-      <LobbyMobile
-        categories={categories}
-        onCategoryPress={handleCategoryPress}
-        onSignIn={() => router.push("/auth/signin")}
-        onBrowse={() => router.push("/home")}
-      />
-      <LobbyDesktop
-        categories={categories}
-        onCategoryPress={handleCategoryPress}
-        onSignIn={() => router.push("/auth/signin")}
-        onBrowse={() => router.push("/home")}
-      />
-    </>
-  );
-}
+    <div ref={root} className="flex min-h-dvh flex-col bg-background">
+      {/* The brand block: everything green is the header, everything below it
+          is the shop floor. Same shape on both layouts — only the gutters,
+          type sizes and the nav row change. */}
+      <header className="relative overflow-hidden rounded-b-sheet pt-safe md:rounded-b-[3rem]">
+        <Ambience />
 
-type LobbyViewProps = {
-  categories: CategoryChip[];
-  onCategoryPress: (categoryId: string) => void;
-  onSignIn: () => void;
-  onBrowse: () => void;
-};
+        <div className="relative mx-auto w-full max-w-[1280px] px-4 pt-4 pb-6 md:px-8 md:pt-6 md:pb-12">
+          <div className="flex items-center justify-between gap-3">
+            <BrandMark size={26} />
+            <div className="flex items-center gap-2 md:gap-3">
+              <LobbyAddressButton className="hidden md:flex" />
+              <Button
+                variant="ghost"
+                onClick={() => router.push("/auth/signin")}
+                className="text-white hover:bg-white/15 active:bg-white/15 active:text-white"
+              >
+                {STRINGS.lobby.signIn}
+              </Button>
+            </div>
+          </div>
 
-/** Pixel-for-pixel port of the native lobby screen. */
-function LobbyMobile({
-  categories,
-  onCategoryPress,
-  onSignIn,
-  onBrowse,
-}: LobbyViewProps) {
-  return (
-    <div className="flex min-h-dvh flex-col bg-background md:hidden">
-      <div className="flex flex-1 flex-col bg-linear-to-br from-primary to-primary-pressed pt-safe">
-        <div className="flex items-center justify-between px-4 pt-3 pb-2">
-          <BrandMark />
-          <LobbyAddressButton />
+          <div className="mt-4 flex flex-col items-start gap-2.5 md:mt-10 md:items-center md:gap-3 md:text-center">
+            <Badge
+              data-animate="intro"
+              className="border border-white/25 bg-white/15 px-3 py-1 text-[11px] font-bold text-white md:text-sm"
+            >
+              {STRINGS.lobby.badge}
+            </Badge>
+            <h1
+              data-animate="intro"
+              className="max-w-4xl font-display text-[2.125rem] leading-[1.08] font-extrabold whitespace-pre-line text-white md:text-[clamp(2.75rem,4.6vw,4rem)] md:leading-[1.05]"
+            >
+              {STRINGS.lobby.headline}
+            </h1>
+            {/* Desktop only: on a phone the headline already says this, and the
+                tiles matter more than a second line of marketing above the
+                fold. */}
+            <Text
+              variant="body-small"
+              className="hidden max-w-xl text-white/70 md:block md:text-lg"
+            >
+              {STRINGS.lobby.subtitle}
+            </Text>
+
+            <div
+              data-animate="intro"
+              className="mt-2 flex w-full flex-col gap-2.5 md:max-w-2xl md:flex-row md:items-center md:gap-3"
+            >
+              <SearchPill onPress={() => router.push("/home")} />
+              <LobbyAddressButton className="w-full justify-start bg-white/15 md:hidden" />
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-10 md:px-8 md:pt-12 md:pb-16">
+        <div className="mb-4 flex flex-col gap-1 md:mb-7 md:items-center md:text-center">
+          <h2 className="font-display text-xl leading-tight font-extrabold text-foreground md:text-[2rem]">
+            {STRINGS.lobby.categoriesTitle}
+          </h2>
+          <Text variant="body-small" className="max-w-2xl md:text-base">
+            {STRINGS.lobby.categoriesSubtitle}
+          </Text>
         </div>
 
-        <div className="mx-4 mt-4 overflow-hidden rounded-2xl bg-(--header-scrim-top) p-4">
-          <Badge className="mb-3 self-start bg-white/20 px-3 py-1 text-[11px] font-bold text-white">
-            {STRINGS.lobby.badge}
-          </Badge>
-          <Text variant="display" className="whitespace-pre-line text-white">
-            {STRINGS.lobby.headline}
-          </Text>
-          <Text variant="body-small" className="mt-2 text-white/75">
-            {STRINGS.lobby.subtitle}
-          </Text>
-        </div>
-
-        <CategoryBubbles
+        <CategoryTiles
           categories={categories}
-          onCategoryPress={onCategoryPress}
+          onCategoryPress={handleCategoryPress}
         />
 
-        <div className="flex-1" />
+        <Text
+          variant="body-small"
+          className="mt-3 text-center text-[11px] tracking-wide text-muted-foreground md:mt-5 md:text-xs"
+        >
+          {STRINGS.lobby.categoriesHint}
+        </Text>
 
-        <div className="relative h-[90px] overflow-hidden rounded-t-[28px]">
-          <Image
-            src="/auth.webp"
-            alt=""
-            fill
-            sizes="(max-width: 768px) 100vw, 0px"
-            className="object-cover"
-          />
-        </div>
-      </div>
-
-      <div className="border-t border-border bg-background px-4 pt-3 pb-4 pb-safe">
-        <div className="flex gap-3">
+        <div className="mt-6 flex flex-col gap-2.5 pb-safe md:mt-10 md:flex-row md:justify-center">
           <Button
+            size="lg"
+            onClick={() => router.push("/home")}
+            className="w-full shadow-e2 md:w-auto md:px-10"
+          >
+            {STRINGS.lobby.startBrowsing}
+            <ArrowRight size={18} aria-hidden />
+          </Button>
+          <Button
+            size="lg"
             variant="outline"
-            onClick={onSignIn}
-            className="flex-1 rounded-xl text-primary"
+            onClick={() => router.push("/auth/signin")}
+            className="w-full md:hidden"
           >
             {STRINGS.lobby.signIn}
           </Button>
-          <Button onClick={onBrowse} className="flex-1 rounded-xl">
-            {STRINGS.lobby.startBrowsing}
-          </Button>
         </div>
-      </div>
+      </main>
     </div>
   );
 }
 
-/** Editorial landing page for desktop: same tokens, same copy, wider stage. */
-function LobbyDesktop({
-  categories,
-  onCategoryPress,
-  onSignIn,
-  onBrowse,
-}: LobbyViewProps) {
-  const root = React.useRef<HTMLDivElement>(null);
-
-  useGSAP(
-    () => {
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      if (reduceMotion) return;
-
-      gsap.from("[data-animate='hero-item']", {
-        y: 28,
-        opacity: 0,
-        duration: 0.7,
-        ease: "power3.out",
-        stagger: 0.09,
-      });
-
-      gsap.to("[data-animate='hero-photo']", {
-        yPercent: 12,
-        ease: "none",
-        scrollTrigger: {
-          trigger: root.current,
-          start: "top top",
-          end: "bottom top",
-          scrub: true,
-        },
-      });
-
-      gsap.from("[data-animate='categories']", {
-        y: 40,
-        opacity: 0,
-        duration: 0.6,
-        ease: "power3.out",
-        scrollTrigger: {
-          trigger: "[data-animate='categories']",
-          start: "top 85%",
-        },
-      });
-    },
-    { scope: root },
-  );
-
+/**
+ * Not an input: search lives on the store list, and a field here would ask the
+ * customer to type before we know their city. It looks like a search bar
+ * because that is the fastest way into the catalogue.
+ */
+function SearchPill({ onPress }: { onPress: () => void }) {
   return (
-    <div
-      ref={root}
-      className="hidden min-h-dvh flex-col bg-background md:flex"
+    <button
+      type="button"
+      onClick={onPress}
+      aria-label={STRINGS.home.searchLabel}
+      className={cn(
+        "flex min-h-12 w-full items-center gap-2.5 rounded-full bg-card px-4 py-3 text-left shadow-e2",
+        "hover:bg-card/90",
+        pressableScale,
+        focusRing,
+      )}
     >
-      <header className="sticky top-0 z-40 px-8 pt-6">
-        <nav className="mx-auto flex h-[4.5rem] w-full max-w-[1280px] items-center justify-between rounded-full bg-foreground/85 px-6 backdrop-blur-md">
-          <BrandMark size={28} />
-          <div className="flex items-center gap-3">
-            <LobbyAddressButton className="bg-white/15" />
-            <Button
-              variant="ghost"
-              onClick={onSignIn}
-              className="text-white hover:bg-white/15 active:bg-white/15 active:text-white"
-            >
-              {STRINGS.lobby.signIn}
-            </Button>
-            <Button onClick={onBrowse}>{STRINGS.lobby.startBrowsing}</Button>
-          </div>
-        </nav>
-      </header>
-
-      <section className="relative -mt-[6.5rem] flex min-h-[38rem] items-center overflow-hidden">
-        <div className="absolute inset-0" data-animate="hero-photo">
-          <Image
-            src="/auth.webp"
-            alt=""
-            fill
-            priority
-            sizes="(min-width: 768px) 100vw, 0px"
-            className="scale-110 object-cover"
-          />
-          <div className="absolute inset-0 bg-linear-to-br from-primary/85 to-primary-pressed/90" />
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,transparent_0%,var(--header-scrim-bottom)_100%)]" />
-        </div>
-
-        <div className="relative mx-auto flex w-full max-w-[1280px] flex-col items-center gap-6 px-8 pt-40 pb-24 text-center">
-          <Badge
-            data-animate="hero-item"
-            className="bg-white/20 px-4 py-1.5 text-sm font-bold text-white"
-          >
-            {STRINGS.lobby.badge}
-          </Badge>
-          <h1
-            data-animate="hero-item"
-            className="max-w-5xl font-display text-[clamp(3rem,5.5vw,5rem)] leading-[1.05] font-extrabold text-white"
-          >
-            {STRINGS.lobby.headline.replace("\n", " ")}
-          </h1>
-          <p
-            data-animate="hero-item"
-            className="max-w-2xl font-sans text-lg leading-8 text-white/80"
-          >
-            {STRINGS.lobby.subtitle}
-          </p>
-          <div data-animate="hero-item" className="mt-2 flex gap-4">
-            <Button
-              size="lg"
-              onClick={onBrowse}
-              className="bg-white text-primary hover:bg-white/90 active:bg-white/90"
-            >
-              {STRINGS.lobby.startBrowsing}
-            </Button>
-            <Button
-              size="lg"
-              variant="outline"
-              onClick={onSignIn}
-              className="border-white/40 bg-transparent text-white hover:bg-white/10 active:bg-white/10 active:text-white"
-            >
-              {STRINGS.lobby.signIn}
-            </Button>
-          </div>
-        </div>
-      </section>
-
-      <section
-        data-animate="categories"
-        className="mx-auto w-full max-w-[1280px] px-8 py-24"
-      >
-        <Text variant="h2" className="mb-8">
-          {STRINGS.explore.categoriesTitle}
-        </Text>
-        <div className="rounded-card bg-linear-to-br from-primary to-primary-pressed p-6">
-          <CategoryBubbles
-            categories={categories}
-            onCategoryPress={onCategoryPress}
-          />
-        </div>
-      </section>
-    </div>
+      <Search size={18} className="shrink-0 text-primary" aria-hidden />
+      <span className="truncate font-sans text-sm font-medium text-muted-foreground">
+        {STRINGS.home.searchPlaceholder}
+      </span>
+    </button>
   );
 }

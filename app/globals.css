@@ -67,6 +67,19 @@
   --shadow-e2: 0 4px 14px 0 rgb(23 33 29 / 0.1);
   --shadow-e3: 0 12px 32px 0 rgb(23 33 29 / 0.16);
 
+  /* Category tile washes — the lobby's service grid. Web-only: the native
+     lobby has no such grid. Each is a low-chroma wash light enough to carry
+     the shared ink colour, so every tile keeps identical label contrast. */
+  --color-tile-food: var(--tile-food);
+  --color-tile-grocery: var(--tile-grocery);
+  --color-tile-pharmacy: var(--tile-pharmacy);
+  --color-tile-electronics: var(--tile-electronics);
+  --color-tile-fashion: var(--tile-fashion);
+  --color-tile-beauty: var(--tile-beauty);
+  --color-tile-entertainment: var(--tile-entertainment);
+  --color-tile-digital: var(--tile-digital);
+  --color-tile-neutral: var(--tile-neutral);
+
   --font-sans: var(--font-dm-sans);
   --font-display: var(--font-bricolage);
   --font-heading: var(--font-bricolage);
@@ -101,6 +114,16 @@
   --border: hsl(60 10% 90%);
   --input: hsl(60 10% 90%);
   --ring: hsl(163 94% 24%);
+
+  --tile-food: hsl(28 96% 88%);
+  --tile-grocery: hsl(140 50% 86%);
+  --tile-pharmacy: hsl(196 82% 87%);
+  --tile-electronics: hsl(220 62% 89%);
+  --tile-fashion: hsl(340 76% 90%);
+  --tile-beauty: hsl(280 60% 90%);
+  --tile-entertainment: hsl(258 76% 90%);
+  --tile-digital: hsl(170 56% 86%);
+  --tile-neutral: hsl(60 18% 89%);
 
   --radius: 1.5rem;
   --radius-image: 1rem;
@@ -150,6 +173,16 @@
   --border: hsl(150 8% 18%);
   --input: hsl(150 8% 18%);
   --ring: hsl(158 64% 52%);
+
+  --tile-food: hsl(28 42% 18%);
+  --tile-grocery: hsl(140 34% 16%);
+  --tile-pharmacy: hsl(196 44% 17%);
+  --tile-electronics: hsl(220 38% 19%);
+  --tile-fashion: hsl(340 34% 19%);
+  --tile-beauty: hsl(280 30% 19%);
+  --tile-entertainment: hsl(258 36% 20%);
+  --tile-digital: hsl(170 34% 15%);
+  --tile-neutral: hsl(60 6% 16%);
 }
 
 @keyframes sheet-up {

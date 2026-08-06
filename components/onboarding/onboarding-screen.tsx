@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Check, Loader2, User } from "lucide-react";
+import { Check, ChevronDown, Loader2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { InputWithIcon } from "@/components/ui/input";
 import {
@@ -11,7 +11,6 @@ import {
   isValidGhanaPhoneNumber,
 } from "@/components/ui/phone-input";
 import { Text } from "@/components/ui/text";
-import { focusRing } from "@/components/ui/pressable";
 import type { City } from "@/lib/api/schemas/catalog";
 import { useCityNames, useGetCities } from "@/lib/api/services/catalog";
 import { STRINGS } from "@/lib/strings";
@@ -58,10 +57,12 @@ function StepHeader({ title, subtitle }: { title: string; subtitle: string }) {
 }
 
 /**
- * Scroll-snapping city column. The native step uses a wheel picker; this is the
- * closest web equivalent that keeps the same "one choice, centred" feel.
+ * Town picker. A native `<select>` on purpose: every phone already knows how to
+ * present one, so there is nothing new to learn and nothing to mis-scroll. No
+ * border — the filled pill is the affordance, matching the rest of the app's
+ * inputs.
  */
-function CityWheel({
+function CitySelect({
   value,
   onChange,
   initialCities,
@@ -72,15 +73,10 @@ function CityWheel({
 }) {
   const cities = useCityNames(initialCities);
   const { isLoading } = useGetCities(initialCities);
-  const activeRef = React.useRef<HTMLButtonElement>(null);
-
-  React.useEffect(() => {
-    activeRef.current?.scrollIntoView({ block: "center" });
-  }, [value]);
 
   if (isLoading) {
     return (
-      <div className="flex h-52 items-center justify-center">
+      <div className="flex h-14 items-center justify-center rounded-full bg-muted">
         <Loader2 className="size-5 animate-spin text-primary" aria-hidden />
       </div>
     );
@@ -88,7 +84,7 @@ function CityWheel({
 
   if (cities.length === 0) {
     return (
-      <div className="flex h-52 items-center justify-center">
+      <div className="flex h-14 items-center justify-center rounded-full bg-muted px-5">
         <Text variant="body-small" className="text-muted-foreground">
           {STRINGS.onboarding.town.loadError}
         </Text>
@@ -97,33 +93,28 @@ function CityWheel({
   }
 
   return (
-    <div
-      role="listbox"
-      aria-label={STRINGS.onboarding.town.wheelLabel}
-      className="scrollbar-none h-52 snap-y snap-mandatory overflow-y-auto rounded-card border border-border bg-card py-20"
-    >
-      {cities.map((city) => {
-        const isSelected = city === value;
-        return (
-          <button
-            key={city}
-            ref={isSelected ? activeRef : undefined}
-            type="button"
-            role="option"
-            aria-selected={isSelected}
-            onClick={() => onChange(city)}
-            className={cn(
-              "flex h-12 w-full snap-center items-center justify-center font-sans transition-colors",
-              focusRing,
-              isSelected
-                ? "text-xl font-bold text-primary"
-                : "text-base text-muted-foreground",
-            )}
-          >
+    <div className="relative">
+      <select
+        aria-label={STRINGS.onboarding.town.wheelLabel}
+        value={value}
+        onChange={(event) => onChange(event.target.value)}
+        className={cn(
+          "h-14 w-full appearance-none rounded-full bg-muted pr-12 pl-5",
+          "font-sans text-base font-medium text-foreground",
+          "outline-none focus-visible:ring-[3px] focus-visible:ring-ring/50",
+        )}
+      >
+        {cities.map((city) => (
+          <option key={city} value={city}>
             {city}
-          </button>
-        );
-      })}
+          </option>
+        ))}
+      </select>
+      <ChevronDown
+        size={20}
+        aria-hidden
+        className="pointer-events-none absolute top-1/2 right-5 -translate-y-1/2 text-primary"
+      />
     </div>
   );
 }
@@ -221,7 +212,7 @@ export function OnboardingScreen({
               title={STRINGS.onboarding.town.title}
               subtitle={STRINGS.onboarding.town.subtitle}
             />
-            <CityWheel
+            <CitySelect
               value={effectiveCity}
               onChange={setSelectedCity}
               initialCities={initialCities}

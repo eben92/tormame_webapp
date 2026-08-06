@@ -120,19 +120,25 @@ export function ShopSkeleton() {
 /** The lobby is a full-bleed brand screen; its shell keeps the gradient. */
 export function LobbySkeleton() {
   return (
-    <div className="flex min-h-dvh flex-col bg-linear-to-br from-primary to-primary-pressed pt-safe">
-      <div className="flex items-center justify-between px-4 pt-3 pb-2">
-        <Skeleton className="h-8 w-40 bg-white/20" />
-        <Skeleton className="h-8 w-24 rounded-full bg-white/20" />
-      </div>
-      <div className="mx-4 mt-4 flex flex-col gap-3 rounded-2xl bg-white/10 p-4">
-        <Skeleton className="h-6 w-32 rounded-full bg-white/20" />
+    <div className="flex min-h-dvh flex-col bg-background">
+      <div className="flex flex-col gap-3 rounded-b-sheet bg-linear-to-br from-primary to-primary-pressed px-4 pt-safe pb-7">
+        <div className="flex items-center justify-between pt-4">
+          <Skeleton className="h-8 w-40 bg-white/20" />
+          <Skeleton className="h-8 w-20 rounded-full bg-white/20" />
+        </div>
+        <Skeleton className="mt-2 h-6 w-32 rounded-full bg-white/20" />
         <Skeleton className="h-10 w-3/4 bg-white/20" />
         <Skeleton className="h-4 w-1/2 bg-white/20" />
+        <Skeleton className="mt-1 h-12 w-full rounded-full bg-white/20" />
       </div>
-      <div className="mt-6 grid grid-cols-2 gap-3 px-4">
+      <div className="flex flex-col gap-2 px-4 pt-6">
+        <Skeleton className="h-6 w-56" />
+        <Skeleton className="h-4 w-72" />
+      </div>
+      <div className="mt-4 grid grid-cols-2 gap-3 px-4">
+        <Skeleton className="col-span-2 h-35 rounded-card" />
         {[0, 1, 2, 3].map((index) => (
-          <Skeleton key={index} className="h-28 rounded-card bg-white/15" />
+          <Skeleton key={index} className="h-35 rounded-card" />
         ))}
       </div>
     </div>
