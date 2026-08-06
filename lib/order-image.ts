@@ -18,8 +18,21 @@ export const ORDER_IMAGE_FALLBACK = "/auth.webp";
  */
 export function orderImageUrl(order: OrderImageSource | null | undefined): string {
   return (
-    order?.shop_image_url?.trim() ||
-    order?.first_item_image_url?.trim() ||
+    usableSrc(order?.shop_image_url) ??
+    usableSrc(order?.first_item_image_url) ??
     ORDER_IMAGE_FALLBACK
   );
+}
+
+/**
+ * `next/image` throws — taking the whole route down — on a src that is neither
+ * absolute nor root-relative. A stored media path that reached us unresolved is
+ * a server-side bug, but a list of orders must not blank out because of one.
+ */
+function usableSrc(value: string | null | undefined): string | null {
+  const src = value?.trim();
+  if (!src) return null;
+  const isUsable =
+    src.startsWith("https://") || src.startsWith("http://") || src.startsWith("/");
+  return isUsable ? src : null;
 }

@@ -75,6 +75,14 @@ export const OrderPlacementSchema = z.object({
 
 export type OrderPlacement = z.infer<typeof OrderPlacementSchema>;
 
+/** What the public contact-plus-code lookup hands back. */
+export const OrderTrackingSchema = z.object({
+  order: OrderSchema,
+  order_tracking_token: z.string(),
+});
+
+export type OrderTracking = z.infer<typeof OrderTrackingSchema>;
+
 export const PaymentAuthorizationSchema = z.object({
   authorization_url: z.string(),
 });

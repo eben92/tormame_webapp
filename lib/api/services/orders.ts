@@ -13,6 +13,7 @@ import {
   OrderPlacementSchema,
   OrderRatingSchema,
   OrderSchema,
+  OrderTrackingSchema,
   PaymentAuthorizationSchema,
   type Order,
   type PlaceOrderInput,
@@ -40,6 +41,51 @@ export function useCreateOrder() {
         body: input,
         schema: OrderPlacementSchema,
       }),
+  });
+}
+
+/**
+ * The public lookup behind the tracking page: the contact details on the order
+ * plus the delivery code. No session — a customer who checked out as a guest
+ * has no account to sign in to.
+ */
+export function useTrackOrderByContact() {
+  return useMutation({
+    mutationFn: (input: { contact: string; code: string }) =>
+      apiFetch("/orders/track", {
+        method: "POST",
+        body: input,
+        schema: OrderTrackingSchema,
+      }),
+  });
+}
+
+/**
+ * Reads an order using a scoped tracking token — the one in the link we email
+ * when a payment is confirmed, or the one the lookup above hands back.
+ *
+ * The token is passed explicitly rather than left to the client's own
+ * `Authorization` header: a signed-in visitor's user token is rejected by this
+ * endpoint, and a signed-out one has no token at all.
+ */
+export function useTrackOrderByToken(
+  orderId: string | null,
+  token: string | null,
+) {
+  return useQuery({
+    queryKey: ["order-tracking", orderId],
+    queryFn: () =>
+      apiFetch(`/orders/${orderId}/track`, {
+        schema: OrderSchema,
+        headers: { Authorization: `Bearer ${token}` },
+      }),
+    enabled: Boolean(orderId && token),
+    retry: false,
+    refetchInterval: (query) =>
+      isActiveOrderStatus(query.state.data?.status)
+        ? ORDER_POLL_INTERVAL_MS
+        : false,
+    refetchIntervalInBackground: false,
   });
 }
 
