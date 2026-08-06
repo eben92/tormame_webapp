@@ -482,12 +482,7 @@ The lobby has been through three shapes. It started as the native screen scaled 
 
 **The tiles.** `CategoryTiles` — a `grid-flow-dense` grid, two columns on a phone and four on desktop. The first tile in the customer's order is featured (full width on the phone, a 2×2 block on desktop), the second widens to two columns on desktop, which squares the grid off with no dead cells. Each tile carries the vertical's name, a one-line blurb, a picture of the goods bleeding off the bottom-right corner, and an arrow chip — so nothing on the page has to be guessed at.
 
-Order is still the customer's: press and hold a tile for 220ms to drag it (dnd-kit sortable, `rectSortingStrategy`), and the arrangement persists locally. A plain tap still opens the category. Two things that follow from that:
-
-- `DndContext` is given a fixed `id`. Without one, dnd-kit generates the `aria-describedby` ids from a counter that starts over on the client, and the page hydrates with a mismatch.
-- Before anyone has rearranged anything, the order comes from `sortCategoriesByDefault` (Food, Grocery, Pharmacy, …), not from the API. `/categories/grouped` returns its verticals in no guaranteed order, and a lobby whose big tile changes on every reload looks broken.
-
-Every tile's art loads eagerly rather than lazily — all of them are above the fold, and a saved order can promote any one of them into the featured slot after hydration.
+The order is fixed: `sortCategoriesByDefault` ranks the verticals (Food, Grocery, Pharmacy, …), so Food always takes the featured tile. `/categories/grouped` returns its verticals in no guaranteed order, and a landing page whose big tile changes between visits looks broken. Drag-to-rearrange was built and then removed: on a page that is now the front door, the tiles are landmarks — a customer who moved them would find the page different from every screenshot, advert and support answer about it. `stores/category-order.ts` and its dnd-kit wiring went with it.
 
 The tile washes are tokens (`--tile-food` and friends in `app/globals.css`, light and dark), not per-component colours. They are web-only: the native lobby has no such grid.
 
@@ -497,10 +492,38 @@ The tile washes are tokens (`--tile-food` and friends in `app/globals.css`, ligh
 
 The tiles show the goods themselves — a burger, a grocery bag, a capsule, a phone. A line icon asks to be decoded; a picture of a meal does not, which matters for a customer whose first delivery app this is.
 
-The art lives in `public/categories/` and is mapped by vertical in `lib/category-art.ts`, together with each vertical's wash and blurb, with a neutral shopping-bag fallback for anything we don't recognise. **The current files are illustrations I authored as stand-ins.** Replacing them with commissioned 3D renders is a file drop: same paths, square canvas, transparent background — only the extension in that map changes.
+The drawings live inline in `components/lobby/category-artwork.tsx` rather than as files, because the hover motion reaches inside them; `lib/category-art.ts` maps each vertical to a drawing, a wash and a blurb, with a neutral shopping-bag fallback for anything we don't recognise. **They are illustrations I authored as stand-ins.** A commissioned 3D render replaces one by keeping the same contract: a square SVG, parts tagged with `data-part`.
+
+### The drawing animates, not the card
+
+Hovering, focusing or tapping a tile plays a GSAP timeline built from `ART_HOVER`, which is per-vertical and describes the object rather than the box: the bun lifts off the burger, the apple and bread rise out of the grocery bag, the capsule turns, the tickets separate, the cards fan apart. Leaving reverses the same timeline, so a fast pointer never leaves a drawing half-open. Each drawing also drifts on its own clock, so the grid is alive before anyone touches it.
+
+The card itself no longer moves — no lift, no scale. Everything else on the page is still, and a hovering card drew attention to the container instead of the goods. Under `prefers-reduced-motion` neither the drift nor the hover timeline is built at all.
 
 Photography was tried first and abandoned: `/companies?category_vertical=…` returns zero stores for every vertical except Food on staging, so there is nothing real to show per category yet. When the catalogue fills out, real store photography is the better answer and worth revisiting.
 
 ### Buttons that look like buttons
 
 The lobby's calls to action were a transparent outline and a flat white pill, and they read as labels. Now: a full-width white primary with an arrow and an `e2` shadow, and a full-width glass secondary with a border — stacked rather than side by side, so neither is squeezed. Same treatment on the desktop hero.
+
+## The lobby is the landing page
+
+It carries a nav and a footer now, and it is the surface a search result, an advert or a shared link lands on.
+
+**Become a partner** sits in the nav and again in the footer, pointing at `ENV.VENDOR_URL` (default `https://vendor.tormame.com`) — vendor onboarding is its own site, so it is a real link out, not a route.
+
+**The footer** (`components/lobby/lobby-footer.tsx`, a Server Component passed into the client screen as a prop so its markup never enters the client bundle) carries: the brand and a one-line description, social icons, Company (browse stores, help, become a partner), Legal (terms, privacy, cookies), App Store and Google Play badges, the payment methods we accept, and the copyright line. It sits on the deep brand green rather than `bg-foreground`, which inverts in dark mode and would put white text on a white footer.
+
+Everything link-driven is env-driven and hidden when blank — `NEXT_PUBLIC_IOS_APP_URL`, `NEXT_PUBLIC_ANDROID_APP_URL` and six social URLs. A badge that goes nowhere is worse than no badge. **Set them before launch or the download CTAs and the social row will not appear.**
+
+**Marks and badges are drawn in-house.** The payment marks in `public/payments/` and the two store badges are simplified reproductions, so the page is complete and nothing hotlinks a logo. Every one of these brands publishes official artwork with its own usage rules (Apple and Google both specify badge size, spacing and localisation); replacing the files, or the two badge blocks, is a drop-in and should happen before launch.
+
+**One category, no grid.** With a single vertical the tiles are dropped and the page is the hero, the actions and the footer. The native app redirects to the store list in that case; a website cannot, or a visitor arriving on the homepage from a search result would be bounced straight past it. "Start browsing" is the way through.
+
+### Policy pages
+
+`/terms`, `/privacy` and `/cookies` are real pages now (`app/(legal)/`), prerendered static, in the sitemap, and linked from the footer. All three share one renderer, `components/legal/legal-document.tsx`, and their text lives as data in `lib/legal.ts`.
+
+They are written for this business and this codebase — Ghanaian law (the Data Protection Act, 2012 (Act 843)), the payment methods the checkout actually offers, and, in the cookie policy, the exact browser storage the app writes. **They have not been reviewed by a lawyer.** Treat them as a complete draft to take to counsel, not as cleared copy; the "last updated" date lives in one constant at the top of `lib/legal.ts`.
+
+`ENV.TERMS_URL` is untouched: auth and settings still open whatever document it points at, so nothing that worked before changed.

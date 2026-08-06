@@ -1,27 +1,10 @@
 import { toTitleCase } from "@/lib/utils";
 
 /**
- * Reconciles the user's saved category-tile order with the categories the API currently
- * returns. Persisted order wins for labels that still exist; any label the API added since
- * the order was last saved is appended (in API order); any persisted label the API no
- * longer returns is dropped silently.
- */
-export function mergeCategoryOrder(
-  persistedOrder: string[],
-  apiLabels: string[],
-): string[] {
-  const apiSet = new Set(apiLabels);
-  const kept = persistedOrder.filter((label) => apiSet.has(label));
-  const keptSet = new Set(kept);
-  const appended = apiLabels.filter((label) => !keptSet.has(label));
-  return [...kept, ...appended];
-}
-
-/**
- * How the verticals are ranked before anyone has rearranged them: most-ordered
- * first, so the featured tile is the one most customers came for. The API
- * returns its categories in no guaranteed order, and a lobby whose big tile
- * changes on every reload looks broken.
+ * How the lobby's verticals are ranked: most-ordered first, so Food takes the
+ * featured tile — it is what most customers came for. The API returns its
+ * categories in no guaranteed order, and a landing page whose big tile changes
+ * on every reload looks broken.
  */
 const DEFAULT_PRIORITY = [
   "Food",

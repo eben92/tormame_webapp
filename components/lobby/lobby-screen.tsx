@@ -12,6 +12,7 @@ import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { CategoryTiles } from "@/components/lobby/category-tiles";
 import { LobbyAddressButton } from "@/components/lobby/lobby-address-button";
+import { ENV } from "@/lib/env";
 import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import {
   useGetCategories,
@@ -57,8 +58,14 @@ function Ambience() {
 export function LobbyScreen({
   /** Verticals prerendered on the server — the lobby paints with its grid. */
   initialCategories,
+  /**
+   * The footer, rendered on the server and passed in rather than imported, so
+   * its markup and its dozen links stay out of the client bundle.
+   */
+  footer,
 }: {
   initialCategories?: CategoriesGroup[] | null;
+  footer: React.ReactNode;
 }) {
   const router = useRouter();
   const { data, isLoading } = useGetCategories(initialCategories);
@@ -68,12 +75,12 @@ export function LobbyScreen({
   const handleCategoryPress = (categoryId: string) =>
     router.push(`/home?category=${categoryId}`);
 
-  // A single vertical is not a choice — send those customers straight to the
-  // store list, same as the native lobby.
-  const shouldRedirectHome = !isLoading && categories.length === 1;
-  React.useEffect(() => {
-    if (shouldRedirectHome) router.replace("/home");
-  }, [shouldRedirectHome, router]);
+  // A single vertical is not a choice, so the grid is dropped rather than shown
+  // with one tile in it. The page still stands — it is the landing page, and it
+  // still has to introduce the brand and point at the store list. (The native
+  // lobby redirects here instead; a website cannot, or a search result for the
+  // homepage would bounce visitors straight past it.)
+  const hasCategoryChoice = categories.length > 1;
 
   useGSAP(
     () => {
@@ -93,7 +100,7 @@ export function LobbyScreen({
     { scope: root, dependencies: [isLoading] },
   );
 
-  if (isLoading || shouldRedirectHome) {
+  if (isLoading) {
     return (
       <div className="flex min-h-dvh items-center justify-center bg-background">
         <Loader2
@@ -115,8 +122,24 @@ export function LobbyScreen({
         <div className="relative mx-auto w-full max-w-[1280px] px-4 pt-4 pb-6 md:px-8 md:pt-6 md:pb-12">
           <div className="flex items-center justify-between gap-3">
             <BrandMark size={26} />
-            <div className="flex items-center gap-2 md:gap-3">
-              <LobbyAddressButton className="hidden md:flex" />
+            <div className="flex items-center gap-1 md:gap-3">
+              <LobbyAddressButton className="hidden lg:flex" />
+              {/* Vendor onboarding lives on its own site, so this is a real
+                  link out rather than a route. */}
+              <a
+                href={ENV.VENDOR_URL}
+                target="_blank"
+                rel="noreferrer noopener"
+                title={STRINGS.lobby.becomePartnerHint}
+                className={cn(
+                  "inline-flex rounded-full px-2 py-2 font-sans text-xs font-bold whitespace-nowrap text-white",
+                  "sm:px-3 sm:text-sm",
+                  "transition-colors hover:bg-white/15",
+                  focusRing,
+                )}
+              >
+                {STRINGS.lobby.becomePartner}
+              </a>
               <Button
                 variant="ghost"
                 onClick={() => router.push("/auth/signin")}
@@ -162,28 +185,30 @@ export function LobbyScreen({
       </header>
 
       <main className="mx-auto w-full max-w-[1280px] flex-1 px-4 pt-6 pb-10 md:px-8 md:pt-12 md:pb-16">
-        <div className="mb-4 flex flex-col gap-1 md:mb-7 md:items-center md:text-center">
-          <h2 className="font-display text-xl leading-tight font-extrabold text-foreground md:text-[2rem]">
-            {STRINGS.lobby.categoriesTitle}
-          </h2>
-          <Text variant="body-small" className="max-w-2xl md:text-base">
-            {STRINGS.lobby.categoriesSubtitle}
-          </Text>
-        </div>
+        {hasCategoryChoice ? (
+          <>
+            <div className="mb-4 flex flex-col gap-1 md:mb-7 md:items-center md:text-center">
+              <h2 className="font-display text-xl leading-tight font-extrabold text-foreground md:text-[2rem]">
+                {STRINGS.lobby.categoriesTitle}
+              </h2>
+              <Text variant="body-small" className="max-w-2xl md:text-base">
+                {STRINGS.lobby.categoriesSubtitle}
+              </Text>
+            </div>
 
-        <CategoryTiles
-          categories={categories}
-          onCategoryPress={handleCategoryPress}
-        />
+            <CategoryTiles
+              categories={categories}
+              onCategoryPress={handleCategoryPress}
+            />
+          </>
+        ) : null}
 
-        <Text
-          variant="body-small"
-          className="mt-3 text-center text-[11px] tracking-wide text-muted-foreground md:mt-5 md:text-xs"
+        <div
+          className={cn(
+            "flex flex-col gap-2.5 md:flex-row md:justify-center",
+            hasCategoryChoice ? "mt-6 md:mt-10" : "mt-2",
+          )}
         >
-          {STRINGS.lobby.categoriesHint}
-        </Text>
-
-        <div className="mt-6 flex flex-col gap-2.5 pb-safe md:mt-10 md:flex-row md:justify-center">
           <Button
             size="lg"
             onClick={() => router.push("/home")}
@@ -202,6 +227,8 @@ export function LobbyScreen({
           </Button>
         </div>
       </main>
+
+      {footer}
     </div>
   );
 }

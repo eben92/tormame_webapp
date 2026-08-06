@@ -143,14 +143,34 @@ export const STRINGS = {
     addressHint: 'Tap to change your delivery location',
     signIn: 'Sign in',
     startBrowsing: 'Start browsing',
-    /* Web-only. The lobby's category grid can be rearranged, which needs saying
-       once — on a phone nobody discovers a press-and-hold on their own. The web
-       lobby is also a landing page and gets room for a real section heading,
-       which the native screen has no space for. */
-    categoriesHint: 'Hold and drag to rearrange',
+    /* Web-only. The web lobby is also the landing page, so it gets a real
+       section heading and a partner link, which the native screen has no room
+       for. */
     categoriesTitle: 'What are you shopping for?',
     categoriesSubtitle:
-      'Restaurants, groceries, pharmacies and more — arranged the way you want them, with whatever you order most on top.',
+      'Restaurants, groceries, pharmacies and more — tap a category to see what is open near you.',
+    becomePartner: 'Become a partner',
+    becomePartnerHint: 'Sell on Tormame — opens our vendor site',
+  },
+  /* Web-only, all of it: the landing page needs a footer, and the mobile app
+     has no equivalent surface. */
+  footer: {
+    tagline:
+      'Food, groceries, pharmacy and more — delivered across Kwahu and beyond.',
+    getTheApp: 'Get the app',
+    appStore: 'Download on the App Store',
+    playStore: 'Get it on Google Play',
+    company: 'Company',
+    home: 'Browse stores',
+    help: 'Help & support',
+    partner: 'Become a partner',
+    legal: 'Legal',
+    terms: 'Terms & conditions',
+    privacy: 'Privacy policy',
+    cookies: 'Cookie policy',
+    followUs: 'Follow us',
+    paymentsTitle: 'We accept',
+    rights: (year: number) => `© ${year} Tormame. All rights reserved.`,
   },
   errors: {
     offlineTitle: "You're offline",

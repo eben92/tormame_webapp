@@ -2,7 +2,16 @@ import type { MetadataRoute } from "next";
 import { getCompaniesPage } from "@/lib/api/server/catalog";
 import { ENV } from "@/lib/env";
 
-const STATIC_ROUTES = ["/lobby", "/home", "/explore", "/collection/popular", "/collection/trending"];
+const STATIC_ROUTES = [
+  "/lobby",
+  "/home",
+  "/explore",
+  "/collection/popular",
+  "/collection/trending",
+];
+
+/** Policy pages: public, rarely changed, and worth indexing. */
+const LEGAL_ROUTES = ["/terms", "/privacy", "/cookies"];
 
 /**
  * Public surface only. Everything behind a session (orders, checkout, profile)
@@ -17,6 +26,11 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
       url: `${ENV.SITE_URL}${route}`,
       changeFrequency: "daily" as const,
       priority: route === "/lobby" ? 1 : 0.8,
+    })),
+    ...LEGAL_ROUTES.map((route) => ({
+      url: `${ENV.SITE_URL}${route}`,
+      changeFrequency: "yearly" as const,
+      priority: 0.3,
     })),
     ...(stores?.data ?? []).map((store) => ({
       url: `${ENV.SITE_URL}/shops/${store.id}`,

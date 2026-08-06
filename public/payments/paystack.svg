@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img" aria-hidden="true">
+  <rect width="72" height="44" rx="6" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="71" height="43" rx="5.5" fill="none" stroke="#E3E3E3"/>
+  <g fill="#00C3F7">
+    <rect x="12" y="11" width="20" height="4" rx="1"/>
+    <rect x="12" y="17" width="20" height="4" rx="1"/>
+    <rect x="12" y="23" width="12" height="4" rx="1"/>
+    <rect x="12" y="29" width="20" height="4" rx="1"/>
+  </g>
+  <text x="49" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#011B33">paystack</text>
+</svg>

@@ -1,33 +1,17 @@
 "use client";
 
 import * as React from "react";
-import Image from "next/image";
-import {
-  DndContext,
-  KeyboardSensor,
-  PointerSensor,
-  closestCenter,
-  useSensor,
-  useSensors,
-  type DragEndEvent,
-} from "@dnd-kit/core";
-import {
-  SortableContext,
-  rectSortingStrategy,
-  sortableKeyboardCoordinates,
-  useSortable,
-} from "@dnd-kit/sortable";
-import { CSS } from "@dnd-kit/utilities";
 import { useGSAP } from "@gsap/react";
 import gsap from "gsap";
 import { ArrowUpRight } from "lucide-react";
-import { categoryArt } from "@/lib/category-art";
 import {
-  mergeCategoryOrder,
-  sortCategoriesByDefault,
-} from "@/lib/category-order";
+  ART_HOVER,
+  CategoryArtwork,
+  type ArtPartTween,
+} from "@/components/lobby/category-artwork";
+import { categoryArt } from "@/lib/category-art";
+import { sortCategoriesByDefault } from "@/lib/category-order";
 import { cn, toTitleCase } from "@/lib/utils";
-import { useCategoryOrderStore } from "@/stores/category-order";
 
 export interface CategoryTileItem {
   id: string;
@@ -35,14 +19,13 @@ export interface CategoryTileItem {
 }
 
 /**
- * The lobby's service grid: one wide tile at the top for whatever the customer
- * put first, then a two-up grid of the rest. Each tile is a picture of the
- * goods on its own wash, because the lobby has to read as a shop front rather
- * than a menu.
+ * The lobby's service grid: Food first and largest, the rest two-up beneath it.
+ * Each tile is a picture of the goods on its own wash, because the lobby has to
+ * read as a shop front rather than a menu.
  *
- * The order is the customer's and persists locally — press and hold a tile to
- * move it. A plain tap still opens the category, so the two never fight on a
- * touchscreen.
+ * The order is fixed (see `sortCategoriesByDefault`) — the tiles are landmarks
+ * on the landing page, and a customer who rearranged them would find the page
+ * different from every screenshot, advert and support answer about it.
  */
 export function CategoryTiles({
   categories,
@@ -53,41 +36,20 @@ export function CategoryTiles({
   onCategoryPress: (categoryId: string) => void;
   className?: string;
 }) {
-  const persistedOrder = useCategoryOrderStore((state) => state.order);
-  const setPersistedOrder = useCategoryOrderStore((state) => state.setOrder);
   const grid = React.useRef<HTMLDivElement>(null);
 
-  const byLabel = React.useMemo(
-    () => new Map(categories.map((category) => [category.label, category])),
-    [categories],
-  );
-  const apiLabels = React.useMemo(
-    () => sortCategoriesByDefault(categories.map((category) => category.label)),
-    [categories],
-  );
-  // Derived, never mirrored into local state: the persisted order is the single
-  // source of truth, reconciled against whatever verticals the API returns now.
-  const order = React.useMemo(
-    () => mergeCategoryOrder(persistedOrder, apiLabels),
-    [persistedOrder, apiLabels],
-  );
-
-  const sensors = useSensors(
-    // A short hold before a drag begins, so a tap still navigates.
-    useSensor(PointerSensor, {
-      activationConstraint: { delay: 220, tolerance: 8 },
-    }),
-    useSensor(KeyboardSensor, {
-      coordinateGetter: sortableKeyboardCoordinates,
-    }),
-  );
+  const ordered = React.useMemo(() => {
+    const byLabel = new Map(
+      categories.map((category) => [category.label, category]),
+    );
+    return sortCategoriesByDefault(categories.map((entry) => entry.label))
+      .map((label) => byLabel.get(label))
+      .filter((category): category is CategoryTileItem => Boolean(category));
+  }, [categories]);
 
   useGSAP(
     () => {
-      const reduceMotion = window.matchMedia(
-        "(prefers-reduced-motion: reduce)",
-      ).matches;
-      if (reduceMotion) return;
+      if (prefersReducedMotion()) return;
 
       gsap.from("[data-tile]", {
         y: 22,
@@ -97,128 +59,118 @@ export function CategoryTiles({
         stagger: 0.045,
       });
     },
-    { scope: grid, dependencies: [order.length] },
+    { scope: grid, dependencies: [ordered.length] },
   );
 
-  const handleDragEnd = (event: DragEndEvent) => {
-    const { active, over } = event;
-    if (!over || active.id === over.id) return;
-
-    const from = order.indexOf(String(active.id));
-    const to = order.indexOf(String(over.id));
-    if (from === -1 || to === -1) return;
-
-    const next = [...order];
-    next.splice(to, 0, ...next.splice(from, 1));
-    setPersistedOrder(next);
-  };
-
-  if (order.length === 0) return null;
+  if (ordered.length === 0) return null;
 
   return (
-    <DndContext
-      // Fixed, because dnd-kit derives its screen-reader `aria-describedby`
-      // ids from it — letting it auto-generate hydrates a different id than
-      // the server rendered.
-      id="lobby-categories"
-      sensors={sensors}
-      collisionDetection={closestCenter}
-      onDragEnd={handleDragEnd}
+    <div
+      ref={grid}
+      className={cn(
+        "grid grid-flow-dense grid-cols-2 auto-rows-35 gap-3",
+        "md:grid-cols-4 md:auto-rows-44 md:gap-4",
+        className,
+      )}
     >
-      <SortableContext items={order} strategy={rectSortingStrategy}>
-        <div
-          ref={grid}
-          className={cn(
-            "grid grid-flow-dense grid-cols-2 gap-3 [grid-auto-rows:8.75rem]",
-            "md:grid-cols-4 md:gap-4 md:[grid-auto-rows:11rem]",
-            className,
-          )}
-        >
-          {order.map((label, index) => {
-            const category = byLabel.get(label);
-            if (!category) return null;
-
-            return (
-              <Tile
-                key={category.id}
-                id={label}
-                displayLabel={toTitleCase(category.label)}
-                isFeatured={index === 0}
-                isWide={index === 1}
-                onPress={() => onCategoryPress(category.id)}
-              />
-            );
-          })}
-        </div>
-      </SortableContext>
-    </DndContext>
+      {ordered.map((category, index) => (
+        <Tile
+          key={category.id}
+          label={category.label}
+          displayLabel={toTitleCase(category.label)}
+          isFeatured={index === 0}
+          isWide={index === 1}
+          onPress={() => onCategoryPress(category.id)}
+        />
+      ))}
+    </div>
   );
 }
 
+function prefersReducedMotion() {
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
 function Tile({
-  id,
+  label,
   displayLabel,
   isFeatured,
   isWide,
   onPress,
 }: {
-  id: string;
+  label: string;
   displayLabel: string;
   isFeatured: boolean;
   /** Second in the order: runs two columns wide, which squares the grid off. */
   isWide: boolean;
   onPress: () => void;
 }) {
-  const {
-    attributes,
-    listeners,
-    setNodeRef,
-    transform,
-    transition,
-    isDragging,
-  } = useSortable({ id });
-  const art = categoryArt(id);
+  const art = categoryArt(label);
+  const stage = React.useRef<HTMLSpanElement>(null);
+  const hover = React.useRef<gsap.core.Timeline | null>(null);
+
+  useGSAP(
+    () => {
+      if (prefersReducedMotion()) return;
+
+      // The drawing breathes on its own, so the grid is alive before anyone
+      // touches it — each tile on its own clock, or the page pulses in unison
+      // and reads as a loading state.
+      gsap.to(stage.current, {
+        y: -5,
+        duration: 2.6 + Math.random() * 0.8,
+        delay: Math.random() * 0.6,
+        repeat: -1,
+        yoyo: true,
+        ease: "sine.inOut",
+      });
+
+      hover.current = buildHoverTimeline(stage.current, ART_HOVER[art.artKey]);
+
+      return () => {
+        hover.current?.kill();
+        hover.current = null;
+      };
+    },
+    { scope: stage, dependencies: [art.artKey] },
+  );
+
+  const play = () => hover.current?.play();
+  const reverse = () => hover.current?.reverse();
 
   return (
     <div
-      ref={setNodeRef}
       data-tile
-      style={{ transform: CSS.Translate.toString(transform), transition }}
       className={cn(
-        "touch-none",
         // The featured tile runs the full width of the phone grid and takes a
         // square block of the desktop one; the runner-up widens on desktop
         // only, where it fills the row the featured block leaves ragged.
         isFeatured && "col-span-2 md:row-span-2",
         isWide && "md:col-span-2",
-        isDragging ? "z-20 opacity-90" : "z-0",
       )}
     >
       <button
         type="button"
         onClick={onPress}
+        onPointerEnter={play}
+        onPointerLeave={reverse}
+        onPointerDown={play}
+        onFocus={play}
+        onBlur={reverse}
         className={cn(
           "group relative flex size-full flex-col justify-between overflow-hidden p-4 text-left",
           "rounded-card ring-1 ring-black/5 shadow-e1",
           art.tint,
           "outline-none focus-visible:ring-[3px] focus-visible:ring-ring",
-          "transition-[transform,box-shadow] duration-(--duration-base)",
-          "hover:-translate-y-1 hover:shadow-e2 active:scale-[0.98]",
-          "motion-reduce:hover:translate-y-0 motion-reduce:active:scale-100",
-          isDragging && "scale-[1.03] cursor-grabbing shadow-e3",
         )}
-        {...attributes}
-        {...listeners}
       >
-        {/* Sits behind the copy and is allowed to run off two edges, so the
-            tile reads as a photographed corner of a shop rather than an icon
-            centred in a box. */}
+        {/* Sits behind the copy and runs off two edges, so the tile reads as a
+            corner of a shop rather than an icon centred in a box. */}
         <span
+          ref={stage}
           aria-hidden
           className={cn(
-            "pointer-events-none absolute -right-[6%] -bottom-[8%] aspect-square",
-            "transition-transform duration-(--duration-base) group-hover:scale-105",
-            "motion-reduce:group-hover:scale-100",
+            "pointer-events-none absolute right-[-6%] bottom-[-8%] aspect-square",
             isFeatured
               ? "w-[34%] md:w-[38%]"
               : isWide
@@ -226,18 +178,9 @@ function Tile({
                 : "w-[52%]",
           )}
         >
-          <Image
-            src={art.src}
-            alt=""
-            fill
-            unoptimized
-            // The featured tile's art is the page's largest paint. The rest are
-            // above the fold too — and a saved order can promote any of them to
-            // the featured slot after hydration — so none of them lazy-load.
-            priority={isFeatured}
-            loading={isFeatured ? undefined : "eager"}
-            sizes="(min-width: 768px) 12rem, 6rem"
-            className="object-contain drop-shadow-[0_6px_10px_rgb(0_0_0/0.16)]"
+          <CategoryArtwork
+            artKey={art.artKey}
+            className="size-full overflow-visible drop-shadow-[0_6px_10px_rgb(0_0_0/0.16)]"
           />
         </span>
 
@@ -278,4 +221,36 @@ function Tile({
       </button>
     </div>
   );
+}
+
+/**
+ * One paused timeline per tile, played forward on hover/focus and reversed on
+ * leave. Built once: rebuilding it on every pointer event would restart the
+ * motion from wherever the last one stopped.
+ */
+function buildHoverTimeline(
+  stage: HTMLElement | null,
+  tweens: ArtPartTween[],
+): gsap.core.Timeline | null {
+  if (!stage) return null;
+
+  const timeline = gsap.timeline({ paused: true });
+
+  tweens.forEach(({ part, to, at }, index) => {
+    const targets = stage.querySelectorAll(`[data-part="${part}"]`);
+    if (targets.length === 0) return;
+
+    timeline.to(
+      targets,
+      {
+        duration: 0.45,
+        ease: "back.out(1.8)",
+        transformOrigin: "50% 50%",
+        ...to,
+      },
+      at ?? index * 0.03,
+    );
+  });
+
+  return timeline;
 }

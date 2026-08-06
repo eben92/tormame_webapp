@@ -7,7 +7,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { makeQueryClient } from "@/lib/query-client";
 import { useAddressStore } from "@/stores/address";
 import { useCartStore } from "@/stores/cart";
-import { useCategoryOrderStore } from "@/stores/category-order";
 import { useOnboardingStore } from "@/stores/onboarding";
 import { useUserStore } from "@/stores/user";
 
@@ -21,7 +20,6 @@ function StoreHydration() {
     void useOnboardingStore.persist.rehydrate();
     void useCartStore.persist.rehydrate();
     void useAddressStore.persist.rehydrate();
-    void useCategoryOrderStore.persist.rehydrate();
   }, []);
 
   return null;

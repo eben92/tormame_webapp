@@ -1,5 +1,6 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
+import { LobbyFooter } from "@/components/lobby/lobby-footer";
 import { LobbyScreen } from "@/components/lobby/lobby-screen";
 import { LobbySkeleton } from "@/components/shell/route-skeletons";
 import { getCategoryGroups } from "@/lib/api/server/catalog";
@@ -16,7 +17,9 @@ export const metadata: Metadata = {
 async function LobbyContent() {
   await requestTime();
   const categories = await getCategoryGroups();
-  return <LobbyScreen initialCategories={categories} />;
+  return (
+    <LobbyScreen initialCategories={categories} footer={<LobbyFooter />} />
+  );
 }
 
 export default function LobbyPage() {

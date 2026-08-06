@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img" aria-hidden="true">
+  <rect width="72" height="44" rx="6" fill="#FFFFFF"/>
+  <rect x="0.5" y="0.5" width="71" height="43" rx="5.5" fill="none" stroke="#E3E3E3"/>
+  <path d="M10 28a11 11 0 0 1 22 0h-5a6 6 0 0 0-12 0z" fill="#ED1B24"/>
+  <circle cx="36" cy="22" r="7" fill="#0057A8"/>
+  <text x="53" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#1A1A1A">Cash</text>
+</svg>
