@@ -8,9 +8,9 @@ export const ENV = {
   /** Absolute origin, used for canonical URLs, Open Graph and the sitemap. */
   SITE_URL: process.env.NEXT_PUBLIC_SITE_URL ?? "https://tormame.app",
   /**
-   * reCAPTCHA v3 site key. Public by design — the matching secret lives only in
-   * `RECAPTCHA_SECRET_KEY`, read by app/api/recaptcha. Empty disables the check,
-   * which is the local-development default.
+   * reCAPTCHA v3 site key. Public by design, and the only half the browser
+   * needs: it produces a token, the backend verifies it with the secret. Empty
+   * means no token is produced, which is the local-development default.
    */
   RECAPTCHA_SITE_KEY: process.env.NEXT_PUBLIC_RECAPTCHA_SITE_KEY ?? "",
   TERMS_URL: process.env.NEXT_PUBLIC_TERMS_URL ?? "",

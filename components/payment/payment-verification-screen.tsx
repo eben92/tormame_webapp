@@ -6,7 +6,6 @@ import { CheckCircle2, CircleAlert, Loader2 } from "lucide-react";
 import { BrandMark } from "@/components/shell/brand-bar";
 import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
-import { useRecaptcha } from "@/hooks/use-recaptcha";
 import {
   PAYMENT_FAILED,
   PAYMENT_PAID,
@@ -113,23 +112,23 @@ function Row({
  * navigates within the website instead, which is what a customer who ordered on
  * the web actually needs.
  */
-export function PaymentVerificationScreen({ reference }: { reference: string }) {
+export function PaymentVerificationScreen({
+  reference,
+}: {
+  reference: string;
+}) {
   const router = useRouter();
-  const { state: recaptchaState, retry: retryRecaptcha } = useRecaptcha(
-    "payment_verification",
-  );
 
   // The polling window is measured, not counted: five checks three seconds
   // apart is the same thing as "keep asking for fifteen seconds", and elapsed
   // time is derivable each render instead of needing state updated from an
   // effect. Refresh restarts the window.
-  const [windowStartedAt, setWindowStartedAt] = React.useState(() => Date.now());
+  const [windowStartedAt, setWindowStartedAt] = React.useState(() =>
+    Date.now(),
+  );
 
   const { data, isLoading, error, dataUpdatedAt, refetch } =
-    useGetPaymentRedirect(reference, {
-      enabled: recaptchaState === "passed",
-      windowStartedAt,
-    });
+    useGetPaymentRedirect(reference, { windowStartedAt });
 
   const pollingExhausted =
     dataUpdatedAt > 0 && dataUpdatedAt - windowStartedAt >= POLL_WINDOW_MS;
@@ -148,7 +147,9 @@ export function PaymentVerificationScreen({ reference }: { reference: string }) 
     return (
       <Card>
         <Centered
-          icon={<CircleAlert size={32} className="text-destructive" aria-hidden />}
+          icon={
+            <CircleAlert size={32} className="text-destructive" aria-hidden />
+          }
           title={STRINGS.paymentVerification.invalidLinkTitle}
           message={STRINGS.paymentVerification.invalidLinkMessage}
         >
@@ -156,33 +157,6 @@ export function PaymentVerificationScreen({ reference }: { reference: string }) 
             {STRINGS.paymentVerification.backHome}
           </Button>
         </Centered>
-      </Card>
-    );
-  }
-
-  if (recaptchaState === "failed") {
-    return (
-      <Card>
-        <Centered
-          icon={<CircleAlert size={32} className="text-destructive" aria-hidden />}
-          title={STRINGS.paymentVerification.botCheckFailedTitle}
-          message={STRINGS.paymentVerification.botCheckFailedMessage}
-        >
-          <Button className="w-full" onClick={retryRecaptcha}>
-            {STRINGS.paymentVerification.refresh}
-          </Button>
-        </Centered>
-      </Card>
-    );
-  }
-
-  if (recaptchaState === "checking") {
-    return (
-      <Card>
-        <Centered
-          icon={<Spinner />}
-          message={STRINGS.paymentVerification.checkingHumanMessage}
-        />
       </Card>
     );
   }
@@ -202,7 +176,9 @@ export function PaymentVerificationScreen({ reference }: { reference: string }) 
     return (
       <Card>
         <Centered
-          icon={<CircleAlert size={32} className="text-destructive" aria-hidden />}
+          icon={
+            <CircleAlert size={32} className="text-destructive" aria-hidden />
+          }
           title={STRINGS.paymentVerification.lookupErrorTitle}
           message={STRINGS.paymentVerification.lookupErrorMessage}
         >
@@ -218,9 +194,13 @@ export function PaymentVerificationScreen({ reference }: { reference: string }) 
     return (
       <Card>
         <Centered
-          icon={<CircleAlert size={32} className="text-destructive" aria-hidden />}
+          icon={
+            <CircleAlert size={32} className="text-destructive" aria-hidden />
+          }
           title={STRINGS.paymentVerification.failedTitle}
-          message={STRINGS.paymentVerification.orderReferenceLabel(data.order_id)}
+          message={STRINGS.paymentVerification.orderReferenceLabel(
+            data.order_id,
+          )}
         >
           <Button className="w-full" onClick={goHome}>
             {STRINGS.paymentVerification.backHome}
@@ -268,7 +248,9 @@ function PaidCard({
   order: PaymentRedirectOrder;
   onViewOrder: (orderId: string) => void;
 }) {
-  const where = [order.shop_name, order.branch_name].filter(Boolean).join(" · ");
+  const where = [order.shop_name, order.branch_name]
+    .filter(Boolean)
+    .join(" · ");
 
   return (
     <Card>
@@ -305,7 +287,10 @@ function PaidCard({
         />
       </div>
 
-      <Text variant="body-small" className="mt-4 text-center text-muted-foreground">
+      <Text
+        variant="body-small"
+        className="mt-4 text-center text-muted-foreground"
+      >
         {STRINGS.paymentVerification.orderIdLabel(order.order_id)}
       </Text>
 

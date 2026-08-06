@@ -1,7 +1,6 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img" aria-hidden="true">
+<!-- Vodafone Cash. Official brand mark, from Wikimedia Commons / Simple Icons. Trademark of its owner, shown to indicate an accepted payment method. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img">
   <rect width="72" height="44" rx="6" fill="#FFFFFF"/>
   <rect x="0.5" y="0.5" width="71" height="43" rx="5.5" fill="none" stroke="#E3E3E3"/>
-  <circle cx="19" cy="22" r="11" fill="#E60000"/>
-  <path d="M19 13.2c-4.4 0-8 3.6-8 8.1 0 4.3 3.3 7.6 7.3 7.6 4.6 0 8.2-3.8 8.2-8.6 0-3.2-1.6-5.6-4.1-6.6.4.6.6 1.3.6 2 0 2.3-1.9 3.4-3.4 4.4-1.3.8-2.2 1.7-2.2 3.2 0 1.3.8 2.2 2 2.2-2 0-3.6-1.6-3.6-4 0-2.8 2-4.5 3.9-5.7 1-.6 1.8-1.2 2.2-2-.9-.4-1.9-.6-2.9-.6z" fill="#FFFFFF"/>
-  <text x="43" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="11" font-weight="700" fill="#1A1A1A">Cash</text>
+  <svg x="24" y="8" width="24" height="28" viewBox="0 0 24 24" preserveAspectRatio="xMidYMid meet" fill="#E60000"><path d="M12 0A12 12 0 0 0 0 12A12 12 0 0 0 12 24A12 12 0 0 0 24 12A12 12 0 0 0 12 0M16.25 1.12C16.57 1.12 16.9 1.15 17.11 1.22C14.94 1.67 13.21 3.69 13.22 6C13.22 6.05 13.22 6.11 13.23 6.17C16.87 7.06 18.5 9.25 18.5 12.28C18.54 15.31 16.14 18.64 12.09 18.65C8.82 18.66 5.41 15.86 5.39 11.37C5.38 8.4 7 5.54 9.04 3.85C11.04 2.19 13.77 1.13 16.25 1.12Z"/></svg>
 </svg>

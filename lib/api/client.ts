@@ -1,6 +1,11 @@
 import type { ZodType } from "zod";
 import { ENV } from "@/lib/env";
 import {
+  RECAPTCHA_ACTION_HEADER,
+  RECAPTCHA_TOKEN_HEADER,
+  getRecaptchaToken,
+} from "@/lib/recaptcha";
+import {
   clearUserStoreAndLogout,
   getAccessToken,
   getRefreshToken,
@@ -69,11 +74,40 @@ async function refreshAccessToken(): Promise<string | null> {
   return refreshPromise;
 }
 
+/**
+ * Endpoints that carry a reCAPTCHA token, with the action reported alongside
+ * it: everything a bot would want to hammer — the session endpoints, order
+ * creation, and the public payment lookup, which needs no session at all.
+ *
+ * Matching is by prefix and lives here rather than at the call sites, so a new
+ * caller of an endpoint on this list is covered without remembering to ask.
+ * The backend does the verifying; until it does, the header is simply ignored.
+ */
+const RECAPTCHA_ACTIONS: ReadonlyArray<readonly [string, string]> = [
+  ["/auth/signin", "signin"],
+  ["/auth/register", "register"],
+  ["/auth/forgot-password/request", "forgot_password_request"],
+  ["/auth/forgot-password/resend-otp", "forgot_password_resend"],
+  ["/auth/forgot-password/validate-otp", "forgot_password_validate"],
+  ["/auth/forgot-password", "forgot_password_reset"],
+  ["/orders/payment-redirect", "payment_verification"],
+  ["/orders", "create_order"],
+];
+
+function resolveRecaptchaAction(endpoint: string): string | undefined {
+  return RECAPTCHA_ACTIONS.find(([prefix]) => endpoint.startsWith(prefix))?.[1];
+}
+
 type ApiFetchOptions<T> = Omit<RequestInit, "body"> & {
   /** Zod schema for the envelope's `data` field. The return type is inferred from it. */
   schema: ZodType<T>;
   /** Plain object — serialised as JSON. */
   body?: unknown;
+  /**
+   * Overrides the action `RECAPTCHA_ACTIONS` would pick for this endpoint.
+   * Rarely needed: the list already covers the endpoints that want a token.
+   */
+  recaptchaAction?: string;
 };
 
 /**
@@ -89,14 +123,23 @@ export async function apiFetch<T>(
   options: ApiFetchOptions<T>,
   retry = true,
 ): Promise<T> {
-  const { schema, body, headers, ...init } = options;
+  const { schema, body, headers, recaptchaAction, ...init } = options;
   const token = getAccessToken();
+
+  const action = recaptchaAction ?? resolveRecaptchaAction(endpoint);
+  const recaptchaToken = action ? await getRecaptchaToken(action) : null;
 
   const response = await fetch(`${ENV.BACKEND_URL}${endpoint}`, {
     ...init,
     headers: {
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(recaptchaToken && action
+        ? {
+            [RECAPTCHA_TOKEN_HEADER]: recaptchaToken,
+            [RECAPTCHA_ACTION_HEADER]: action,
+          }
+        : {}),
       ...(headers ?? {}),
     },
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),

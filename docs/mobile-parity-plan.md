@@ -456,7 +456,7 @@ Ported from `quups_web`'s `/payment-redirect` route, rebuilt on this design syst
 Two things differ from the original:
 
 - **It works for web customers.** The original only knows how to hand off through `window.ReactNativeWebView`. This one still does that when it is loaded inside the app's WebView, and otherwise navigates within the website — "View order" goes to `/order-details/{id}`, "Back to home" to `/home`.
-- **Polling is derived, not counted.** The window is a timestamp comparison, and `refetchInterval` stops itself on a final status or once the window has elapsed, so there is no counter state updated from an effect.
+- **Polling is derived, not counted.** The window is a timestamp comparison, and `refetchInterval` stops itself on a final status, on a failed lookup, or once the window has elapsed, so there is no counter state updated from an effect. (A 404 originally fell through all three and polled forever, flickering a spinner at exactly the customer who most needed to be told what happened.)
 
 `payment_status` is read as a plain string rather than a Zod enum: this is the last screen a customer sees after paying, and it must not fail closed because the backend added a status we haven't seen. Anything unrecognised falls through to "still confirming".
 
@@ -464,9 +464,13 @@ The page in `quups_web` stays where it is — this one is additive, and the back
 
 ### Bot protection
 
-The lookup is public and takes a reference, so it is worth protecting. `/payment-redirect` runs an invisible reCAPTCHA v3 check (`hooks/use-recaptcha.ts`) and has the server verify the token at `app/api/recaptcha` — the secret never reaches the browser, which is the only reason that route exists. Score threshold is Google's default 0.5, and the action is checked against the token.
+Verification belongs to the backend: the browser produces a reCAPTCHA v3 token, the backend checks it with the secret. `lib/recaptcha.ts` loads the v3 script once and executes an action; `lib/api/client.ts` attaches the result to every request on its `RECAPTCHA_ACTIONS` list as two headers — `X-Recaptcha-Token` and `X-Recaptcha-Action`.
 
-Two deliberate escape hatches: with no keys configured the check is skipped (local development shouldn't need Google credentials), and if Google itself is unreachable the client passes rather than stranding someone who has just paid — the server-side check is what actually gates abuse. Keys go in `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY`; both are documented in `.env.example`.
+The list covers sign-in, registration, all three password-reset steps, order creation and the public payment lookup, and it is matched by endpoint prefix in the client rather than at each call site, so a new caller of a listed endpoint is covered without remembering to ask.
+
+Nothing in the browser gates on the result. `getRecaptchaToken` returns `null` when no site key is configured (the local default), when the script is blocked, or when Google is unreachable — the request goes out without the header rather than stranding someone who has just paid. The earlier client-side verify route (`app/api/recaptcha`) and its `RECAPTCHA_SECRET_KEY` are gone; only `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` remains.
+
+**Two things the backend has to do** before this is live: verify the header (until it does, the header is simply ignored and nothing changes), and allow `X-Recaptcha-Token` and `X-Recaptcha-Action` in `Access-Control-Allow-Headers`. Custom headers make these cross-origin calls preflighted; staging accepts them today, but a stricter environment would reject every listed request the moment a site key is set.
 
 ---
 
@@ -508,6 +512,10 @@ The lobby's calls to action were a transparent outline and a flat white pill, an
 
 ## The lobby is the landing page
 
+`/` **is** this page. tormame.com opens it for everyone — signed in or not, onboarded or not — because this is the page that says what the business is. `/lobby` stays as a 308 to `/`, so older links, bookmarks and anything already indexed keep working and hand their ranking over. The client-side `EntryRouter` that used to decide where `/` sent people is gone.
+
+**Getting into the application goes through onboarding.** Every call to action here (a category tile, the search bar, "Start browsing") routes to `/onboarding?next=<destination>` when onboarding hasn't been finished, and onboarding returns the customer to that exact destination when it has — `next` is only followed when it is a path on this site, so it can't be used to bounce anyone off-site. `OnboardingGate`, mounted in the `(app)` layout, enforces the same rule for anyone arriving another way: a bookmark, a shared store link, a deep link into `/checkout`. It renders nothing and sits beside the screen rather than wrapping it, so every screen underneath keeps its prerendered shell.
+
 It carries a nav and a footer now, and it is the surface a search result, an advert or a shared link lands on.
 
 **Become a partner** sits in the nav and again in the footer, pointing at `ENV.VENDOR_URL` (default `https://vendor.tormame.com`) — vendor onboarding is its own site, so it is a real link out, not a route.
@@ -516,7 +524,7 @@ It carries a nav and a footer now, and it is the surface a search result, an adv
 
 Everything link-driven is env-driven and hidden when blank — `NEXT_PUBLIC_IOS_APP_URL`, `NEXT_PUBLIC_ANDROID_APP_URL` and six social URLs. A badge that goes nowhere is worse than no badge. **Set them before launch or the download CTAs and the social row will not appear.**
 
-**Marks and badges are drawn in-house.** The payment marks in `public/payments/` and the two store badges are simplified reproductions, so the page is complete and nothing hotlinks a logo. Every one of these brands publishes official artwork with its own usage rules (Apple and Google both specify badge size, spacing and localisation); replacing the files, or the two badge blocks, is a drop-in and should happen before launch.
+**Payment marks are the brands' own.** MTN, Vodafone, Visa, Mastercard and Paystack in `public/payments/` carry the official mark, each set in a 72×44 chip. AirtelTigo publishes nothing we could take, so that one is the wallet's name in plain type rather than an imitation — drop the official SVG in at `public/payments/airteltigo-cash.svg` and it is used as-is. The two **store badges are still drawn in-house**: Apple and Google license their badges with fixed size, spacing and localisation rules, so swap in the official artwork before launch.
 
 **One category, no grid.** With a single vertical the tiles are dropped and the page is the hero, the actions and the footer. The native app redirects to the store list in that case; a website cannot, or a visitor arriving on the homepage from a search result would be bounced straight past it. "Start browsing" is the way through.
 

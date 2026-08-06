@@ -13,6 +13,7 @@ import {
 import { Text } from "@/components/ui/text";
 import type { City } from "@/lib/api/schemas/catalog";
 import { useCityNames, useGetCities } from "@/lib/api/services/catalog";
+import { DEFAULT_APP_PATH, safeNextPath } from "@/lib/app-entry";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { useOnboardingStore } from "@/stores/onboarding";
@@ -128,6 +129,9 @@ export function OnboardingScreen({
   const router = useRouter();
   const searchParams = useSearchParams();
   const isCityOnly = searchParams.get("mode") === "city-only";
+  // Where the customer was heading when onboarding interrupted them. Anything
+  // that isn't a path on this site is ignored (see `safeNextPath`).
+  const nextPath = safeNextPath(searchParams.get("next"));
 
   const setCity = useOnboardingStore((state) => state.setCity);
   const setProfileDraft = useOnboardingStore((state) => state.setProfileDraft);
@@ -147,12 +151,15 @@ export function OnboardingScreen({
 
   React.useEffect(() => {
     if (!showSuccess) return;
+    // Back to where they were going; failing that, into the store list, which
+    // is what onboarding was for.
+    const destination = nextPath ?? DEFAULT_APP_PATH;
     const timer = setTimeout(
-      () => router.replace(isCityOnly ? "/home" : "/lobby"),
+      () => router.replace(destination),
       SUCCESS_DELAY_MS,
     );
     return () => clearTimeout(timer);
-  }, [showSuccess, isCityOnly, router]);
+  }, [showSuccess, nextPath, router]);
 
   const finish = () => {
     completeOnboarding();
@@ -186,7 +193,12 @@ export function OnboardingScreen({
     return (
       <div className="flex min-h-dvh flex-col items-center justify-center gap-5 bg-background">
         <div className="flex size-24 items-center justify-center rounded-full bg-primary">
-          <Check size={44} strokeWidth={3.5} className="text-primary-foreground" aria-hidden />
+          <Check
+            size={44}
+            strokeWidth={3.5}
+            className="text-primary-foreground"
+            aria-hidden
+          />
         </div>
         <Text variant="h1">{STRINGS.onboarding.success.title}</Text>
       </div>
@@ -196,7 +208,13 @@ export function OnboardingScreen({
   return (
     <div className="flex min-h-dvh flex-col bg-background pt-safe pb-safe">
       <div className="flex items-center justify-center pt-4 pb-2">
-        <Image src="/logo.png" alt="" width={56} height={56} className="rounded-2xl" />
+        <Image
+          src="/logo.png"
+          alt=""
+          width={56}
+          height={56}
+          className="rounded-2xl"
+        />
       </div>
 
       {!isCityOnly ? (

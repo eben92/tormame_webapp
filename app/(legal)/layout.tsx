@@ -12,7 +12,7 @@ export default function LegalLayout({
 }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
-      <BrandBar href="/lobby" />
+      <BrandBar href="/" />
       {children}
     </div>
   );

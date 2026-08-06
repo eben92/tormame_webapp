@@ -111,7 +111,7 @@ export function SignInScreen() {
     <AuthShell
       title={STRINGS.auth.signin.title}
       subtitle={STRINGS.auth.signin.subtitle}
-      dismiss={{ kind: "close", onDismiss: () => router.replace("/lobby") }}
+      dismiss={{ kind: "close", onDismiss: () => router.replace("/") }}
       error={error}
       footer={
         <>

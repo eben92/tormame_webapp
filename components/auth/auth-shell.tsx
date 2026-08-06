@@ -39,8 +39,8 @@ export function AuthShell({
     <div className="flex min-h-dvh flex-col bg-background md:items-center md:justify-center md:py-12">
       {/* Signing in is often the first page someone lands on, so it has to say
           whose site this is: a bar on mobile, above the card on desktop. */}
-      <BrandBar href="/lobby" className="md:hidden" />
-      <BrandMark href="/lobby" size={32} className="mb-6 hidden md:flex" />
+      <BrandBar href="/" className="md:hidden" />
+      <BrandMark href="/" size={32} className="mb-6 hidden md:flex" />
 
       <div className="flex w-full flex-1 flex-col md:min-h-0 md:max-w-[28rem] md:flex-none md:rounded-card md:border md:border-border md:bg-card md:shadow-e2">
         <div

@@ -19,7 +19,7 @@ export function LegalDocumentPage({ document }: { document: LegalDocument }) {
   return (
     <article className="mx-auto w-full max-w-[46rem] px-4 pt-6 pb-16 md:px-8 md:pt-12">
       <Link
-        href="/lobby"
+        href="/"
         className={cn(
           "inline-flex items-center gap-1.5 rounded-full font-sans text-sm font-bold text-primary",
           "hover:opacity-80",

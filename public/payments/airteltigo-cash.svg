@@ -1,7 +1,14 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img" aria-hidden="true">
+<!--
+  AirtelTigo Cash — WORDMARK PLACEHOLDER, not the brand's logo.
+
+  Unlike the other five, no official AirtelTigo asset is published anywhere we
+  can take one from, so this is the wallet's name set in plain type rather than
+  an imitation of their mark. Drop the official SVG in at this exact path and it
+  is used as-is; nothing else has to change.
+-->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 72 44" width="72" height="44" role="img">
   <rect width="72" height="44" rx="6" fill="#FFFFFF"/>
   <rect x="0.5" y="0.5" width="71" height="43" rx="5.5" fill="none" stroke="#E3E3E3"/>
-  <path d="M10 28a11 11 0 0 1 22 0h-5a6 6 0 0 0-12 0z" fill="#ED1B24"/>
-  <circle cx="36" cy="22" r="7" fill="#0057A8"/>
-  <text x="53" y="26" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="10" font-weight="700" fill="#1A1A1A">Cash</text>
+  <text x="36" y="20" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#1A1A1A">AirtelTigo</text>
+  <text x="36" y="32" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="9" font-weight="700" fill="#5B5B5B">Cash</text>
 </svg>

@@ -12,6 +12,7 @@ import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { CategoryTiles } from "@/components/lobby/category-tiles";
 import { LobbyAddressButton } from "@/components/lobby/lobby-address-button";
+import { DEFAULT_APP_PATH, appEntryPath } from "@/lib/app-entry";
 import { ENV } from "@/lib/env";
 import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import {
@@ -20,6 +21,8 @@ import {
 } from "@/lib/api/services/catalog";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
+import { useOnboardingStore } from "@/stores/onboarding";
+import { useUserStore } from "@/stores/user";
 
 gsap.registerPlugin(useGSAP);
 
@@ -72,8 +75,20 @@ export function LobbyScreen({
   const categories = React.useMemo<CategoryChip[]>(() => data ?? [], [data]);
   const root = React.useRef<HTMLDivElement>(null);
 
+  const hasOnboarded = useOnboardingStore((state) => state.hasOnboarded);
+  const isSignedIn = Boolean(useUserStore((state) => state.user));
+
+  /**
+   * Every way into the application from here goes through onboarding when it
+   * hasn't been done. `OnboardingGate` enforces the same rule for anyone who
+   * arrives by another route; doing it here as well spares the customer a
+   * redirect they can see.
+   */
+  const enterApp = (target: string) =>
+    router.push(appEntryPath(target, { hasOnboarded, isSignedIn }));
+
   const handleCategoryPress = (categoryId: string) =>
-    router.push(`/home?category=${categoryId}`);
+    enterApp(`${DEFAULT_APP_PATH}?category=${categoryId}`);
 
   // A single vertical is not a choice, so the grid is dropped rather than shown
   // with one tile in it. The page still stands — it is the landing page, and it
@@ -177,7 +192,7 @@ export function LobbyScreen({
               data-animate="intro"
               className="mt-2 flex w-full flex-col gap-2.5 md:max-w-2xl md:flex-row md:items-center md:gap-3"
             >
-              <SearchPill onPress={() => router.push("/home")} />
+              <SearchPill onPress={() => enterApp(DEFAULT_APP_PATH)} />
               <LobbyAddressButton className="w-full justify-start bg-white/15 md:hidden" />
             </div>
           </div>
@@ -211,7 +226,7 @@ export function LobbyScreen({
         >
           <Button
             size="lg"
-            onClick={() => router.push("/home")}
+            onClick={() => enterApp(DEFAULT_APP_PATH)}
             className="w-full shadow-e2 md:w-auto md:px-10"
           >
             {STRINGS.lobby.startBrowsing}

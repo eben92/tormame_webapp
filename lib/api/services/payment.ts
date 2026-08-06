@@ -25,7 +25,7 @@ export const POLL_WINDOW_MS = MAX_POLLS * POLL_INTERVAL_MS;
  */
 export function useGetPaymentRedirect(
   reference: string,
-  options: { enabled: boolean; windowStartedAt: number },
+  options: { windowStartedAt: number },
 ) {
   return useQuery({
     queryKey: ["payment-redirect", reference],
@@ -34,13 +34,23 @@ export function useGetPaymentRedirect(
         `/orders/payment-redirect?reference=${encodeURIComponent(reference)}`,
         { schema: PaymentRedirectOrderSchema },
       ),
-    enabled: options.enabled && Boolean(reference),
+    enabled: Boolean(reference),
     retry: false,
     refetchInterval: (query) => {
       const status = query.state.data?.payment_status;
       if (status === PAYMENT_PAID || status === PAYMENT_FAILED) return false;
 
-      const updatedAt = query.state.dataUpdatedAt;
+      // A failed lookup is final. The reference is unknown (404) or the backend
+      // is down; polling it every three seconds forever only flickers a spinner
+      // at someone who needs to be told what happened.
+      if (query.state.error) return false;
+
+      // Measured from whichever answer came last, so an error that arrives
+      // before any data still closes the window.
+      const updatedAt = Math.max(
+        query.state.dataUpdatedAt,
+        query.state.errorUpdatedAt,
+      );
       if (updatedAt && updatedAt - options.windowStartedAt >= POLL_WINDOW_MS) {
         return false;
       }

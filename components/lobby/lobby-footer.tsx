@@ -33,9 +33,9 @@ const SOCIALS = [
 ];
 
 /**
- * The methods the checkout actually offers. The marks are simplified
- * reproductions drawn in-house; each scheme publishes official artwork with its
- * own usage rules, and replacing these files is a drop-in.
+ * The methods the checkout actually offers. Five carry the brand's own mark;
+ * AirtelTigo publishes none we can take, so that one is its name in plain type
+ * until an official asset is dropped in at the same path.
  */
 const PAYMENT_METHODS = [
   { src: "/payments/mtn-momo.svg", label: "MTN Mobile Money" },

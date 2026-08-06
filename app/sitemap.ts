@@ -3,7 +3,7 @@ import { getCompaniesPage } from "@/lib/api/server/catalog";
 import { ENV } from "@/lib/env";
 
 const STATIC_ROUTES = [
-  "/lobby",
+  "/",
   "/home",
   "/explore",
   "/collection/popular",
@@ -25,7 +25,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     ...STATIC_ROUTES.map((route) => ({
       url: `${ENV.SITE_URL}${route}`,
       changeFrequency: "daily" as const,
-      priority: route === "/lobby" ? 1 : 0.8,
+      priority: route === "/" ? 1 : 0.8,
     })),
     ...LEGAL_ROUTES.map((route) => ({
       url: `${ENV.SITE_URL}${route}`,
