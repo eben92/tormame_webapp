@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import type { Order } from "@/lib/api/schemas/order";
+import { orderImageUrl } from "@/lib/order-image";
 import { getOrderPaymentAction } from "@/lib/payment-cta";
 import { STRINGS } from "@/lib/strings";
 import { cn, formatCedis } from "@/lib/utils";
@@ -61,7 +62,7 @@ export function OrderCard({
       >
         <span className="relative size-14 shrink-0 overflow-hidden rounded-image bg-muted">
           <Image
-            src={order.first_item_image_url || "/auth.webp"}
+            src={orderImageUrl(order)}
             alt=""
             fill
             sizes="56px"

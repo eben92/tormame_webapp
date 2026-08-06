@@ -168,6 +168,13 @@ export const STRINGS = {
     home: 'Browse stores',
     help: 'Help & support',
     partner: 'Become a partner',
+    /* Required wording. Google permits hiding the reCAPTCHA badge only if this
+       notice, with both links, is visible on the pages the check runs on. */
+    recaptchaNotice: 'This site is protected by reCAPTCHA and the Google',
+    recaptchaPrivacy: 'Privacy Policy',
+    recaptchaAnd: 'and',
+    recaptchaTerms: 'Terms of Service',
+    recaptchaApply: 'apply.',
     legal: 'Legal',
     terms: 'Terms & conditions',
     privacy: 'Privacy policy',

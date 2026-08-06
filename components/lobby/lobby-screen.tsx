@@ -80,6 +80,12 @@ export function LobbyScreen({
 
   const hasOnboarded = useOnboardingStore((state) => state.hasOnboarded);
   const isSignedIn = Boolean(useUserStore((state) => state.user));
+  // The session is read from storage after the first paint, so "signed out" is
+  // not knowable yet on that paint. Offering "Sign in" before we know would
+  // show it to signed-in customers for a frame — and the landing page is the
+  // homepage here, so they see it on every visit.
+  const userHasHydrated = useUserStore((state) => state.hasHydrated);
+  const showSignIn = userHasHydrated && !isSignedIn;
 
   /**
    * Every way into the application from here goes through onboarding when it
@@ -158,13 +164,15 @@ export function LobbyScreen({
               >
                 {STRINGS.lobby.becomePartner}
               </a>
-              <Button
-                variant="ghost"
-                onClick={() => router.push("/auth/signin")}
-                className="text-white hover:bg-white/15 active:bg-white/15 active:text-white"
-              >
-                {STRINGS.lobby.signIn}
-              </Button>
+              {showSignIn ? (
+                <Button
+                  variant="ghost"
+                  onClick={() => router.push("/auth/signin")}
+                  className="text-white hover:bg-white/15 active:bg-white/15 active:text-white"
+                >
+                  {STRINGS.lobby.signIn}
+                </Button>
+              ) : null}
             </div>
           </div>
 
@@ -229,14 +237,16 @@ export function LobbyScreen({
             {STRINGS.lobby.startBrowsing}
             <ArrowRight size={18} aria-hidden />
           </Button>
-          <Button
-            size="lg"
-            variant="outline"
-            onClick={() => router.push("/auth/signin")}
-            className="w-full md:hidden"
-          >
-            {STRINGS.lobby.signIn}
-          </Button>
+          {showSignIn ? (
+            <Button
+              size="lg"
+              variant="outline"
+              onClick={() => router.push("/auth/signin")}
+              className="w-full md:hidden"
+            >
+              {STRINGS.lobby.signIn}
+            </Button>
+          ) : null}
         </div>
       </main>
 

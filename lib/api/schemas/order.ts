@@ -58,6 +58,8 @@ export const OrderSchema = z.object({
   status_history: z.array(OrderStatusEventSchema).nullish(),
   items: z.array(OrderItemSchema).nullish(),
   first_item_image_url: z.string().nullish(),
+  /** The shop's banner (logo as its own fallback) — what an order row shows. */
+  shop_image_url: z.string().nullish(),
   first_item_name: z.string().nullish(),
   delivery_address_snapshot: DeliveryAddressSnapshotSchema.nullish(),
 });

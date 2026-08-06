@@ -53,6 +53,13 @@ function DetailsHeader({ title, onBack }: { title?: string; onBack: () => void }
   );
 }
 
+/**
+ * Statuses past which the confirmation code is spent. It is what the courier is
+ * handed at the door, so it stops being shown the moment the order is
+ * delivered — a code still on screen invites someone to read it out again.
+ */
+const CODE_SPENT_STATUSES = ["PAYMENT_PENDING", "CANCELLED", "DELIVERED", "COMPLETED"];
+
 export function OrderDetailsScreen({ orderId }: { orderId: string }) {
   const router = useRouter();
   const { data: order, isLoading, isError, error, refetch } = useGetOrder(orderId);
@@ -100,10 +107,7 @@ export function OrderDetailsScreen({ orderId }: { orderId: string }) {
 
   const action = getOrderPaymentAction(order);
   const showCode =
-    order.confirmation_code &&
-    order.status !== "PAYMENT_PENDING" &&
-    order.status !== "CANCELLED" &&
-    order.status !== "COMPLETED";
+    order.confirmation_code && !CODE_SPENT_STATUSES.includes(order.status);
   const codeLabel =
     order.fulfillment_type === "PICKUP"
       ? STRINGS.orderDetails.pickupCodeLabel

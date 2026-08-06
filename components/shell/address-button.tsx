@@ -6,9 +6,11 @@ import { AddressSheet } from "@/components/shared/address-sheet";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { useGetAddresses } from "@/lib/api/services/addresses";
+import { addressLabel } from "@/lib/address-label";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 import { resolveSelectedAddress, useAddressStore } from "@/stores/address";
+import { useOnboardingStore } from "@/stores/onboarding";
 import { useUserStore } from "@/stores/user";
 
 /** The resolved delivery address, shared by every surface that shows one. */
@@ -45,11 +47,11 @@ export function AddressButton({
   const [open, setOpen] = React.useState(false);
   const selectedAddress = useSelectedAddress();
 
-  const label = selectedAddress
-    ? `${selectedAddress.street}, ${selectedAddress.city}`
-    : STRINGS.home.chooseAddress;
+  const city = useOnboardingStore((state) => state.city);
+  const label = addressLabel(selectedAddress, city, STRINGS.home.chooseAddress);
+  const hasLocation = label !== STRINGS.home.chooseAddress;
 
-  const ariaLabel = selectedAddress
+  const ariaLabel = hasLocation
     ? `${STRINGS.common.deliverTo}: ${label}. ${STRINGS.home.addressHint}`
     : STRINGS.home.chooseAddress;
 
