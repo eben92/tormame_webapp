@@ -306,6 +306,12 @@ export const STRINGS = {
   },
   payment: {
     headerTitle: 'Complete payment',
+    /* Web-only. The native app hosts Paystack inside a WebView, so it never needs
+       to describe a second tab; on web these two lines cover the wait and the
+       blocked-popup case. */
+    waitingMessage: 'Finish paying in the tab that just opened. This page updates by itself once payment goes through.',
+    popupBlockedMessage: 'Your browser blocked the payment window. Tap the button below to open it.',
+    openPaymentCta: 'Open payment',
     successTitle: 'Order placed!',
     successMessage: "We've got your payment. We'll let you know as your order moves along.",
     confirmationCodeLabel: 'Confirmation code:',

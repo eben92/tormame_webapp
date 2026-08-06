@@ -5,11 +5,18 @@ export type ApiErrorKind = "offline" | "server" | "client";
 /** Error thrown by `apiFetch` for any non-2xx response. */
 export class ApiError extends Error {
   readonly status: number;
+  /**
+   * True when a 401 means "this request was refused", not "your session is
+   * gone" — e.g. change-password answers 401 for a wrong current password.
+   * Those must never clear the session.
+   */
+  readonly isDomainError: boolean;
 
-  constructor(message: string, status: number) {
+  constructor(message: string, status: number, isDomainError = false) {
     super(message);
     this.name = "ApiError";
     this.status = status;
+    this.isDomainError = isDomainError;
   }
 }
 
@@ -57,7 +64,8 @@ export function getErrorCopy(err: unknown): { title: string; message: string } {
   }
 }
 
+/** A 401 that really does mean the session is over, so the app should log out. */
 export function isUnauthorizedError(err: unknown): boolean {
-  if (err instanceof ApiError) return err.status === 401;
+  if (err instanceof ApiError) return err.status === 401 && !err.isDomainError;
   return err instanceof Error && err.message.toLowerCase() === "unauthorized";
 }

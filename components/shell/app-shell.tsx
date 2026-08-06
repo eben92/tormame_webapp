@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Compass, LayoutGrid, Search, ShoppingBag, User } from "lucide-react";
 import { AddressButton } from "@/components/shell/address-button";
+import { GlobalCartBar } from "@/components/shared/global-cart-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { focusRing } from "@/components/ui/pressable";
@@ -27,6 +28,10 @@ function isActiveTab(pathname: string, href: string) {
 /** Fixed bottom tab bar — the mobile app's primary navigation, 64px + safe area. */
 function TabBar() {
   const pathname = usePathname();
+
+  // The native app only shows tabs on the four tab screens; anything pushed on
+  // top of them (shop, checkout, order details…) is a full-screen stack screen.
+  if (!TABS.some((tab) => isActiveTab(pathname, tab.href))) return null;
 
   return (
     <nav
@@ -145,10 +150,16 @@ function DesktopHeader() {
  * tab bar), a sticky marketplace header on desktop.
  */
 export function AppShell({ children }: { children: React.ReactNode }) {
+  const pathname = usePathname();
+  const hasTabBar = TABS.some((tab) => isActiveTab(pathname, tab.href));
+
   return (
     <div className="flex min-h-dvh flex-col bg-background">
       <DesktopHeader />
-      <div className="flex flex-1 flex-col pb-16 md:pb-0">{children}</div>
+      <div className={cn("flex flex-1 flex-col", hasTabBar && "pb-16 md:pb-0")}>
+        {children}
+      </div>
+      <GlobalCartBar />
       <TabBar />
     </div>
   );

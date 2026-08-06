@@ -1,9 +1,10 @@
-import { redirect } from "next/navigation";
+import { EntryRouter } from "@/components/shared/entry-router";
 
 /**
- * The native app shows a brand splash while it decides where to send you. On
- * web that decision is instant and lives in the lobby, so `/` just forwards.
+ * Entry point. Where a customer belongs depends on state that only exists in
+ * the browser (persisted onboarding + session), so the decision runs client-side
+ * in `EntryRouter` rather than as a server redirect.
  */
 export default function RootPage() {
-  redirect("/lobby");
+  return <EntryRouter />;
 }

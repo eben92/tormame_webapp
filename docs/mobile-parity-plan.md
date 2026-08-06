@@ -2,7 +2,7 @@
 
 Port of the Expo/React Native app at `../quups_app` (product name **TORMAME**) to the Next.js 16 app in this repo.
 
-Status: **awaiting approval — no implementation started.**
+Status: **all 21 routes built and integrated.** Remaining gaps are listed under "Not verified end to end" in Part 5.
 
 ---
 
@@ -302,22 +302,22 @@ Push notifications and the unread tab dot, haptics, expo splash/confetti/Skia, i
 | Foundation (tokens, primitives, API client, stores, shell) | ✅ | ✅ | — | ✅ | ✅ | ✅ |
 | `/lobby` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `/auth/signin` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
-| `/auth/register` | ✅ | ✅ | ✅ | partial | ✅ | |
+| `/auth/register` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
 | `/auth/forgot-password` (+ reset) | ✅ | ✅ | ✅ | partial | ✅ | |
-| `/onboarding` | | | | | | |
+| `/onboarding` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
 | `/home` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
-| `/explore` | | | | | | |
-| `/shops/[slug]` | | | | | | |
-| `/collection/[sort]` | | | | | | |
-| `/checkout` | | | | | | |
-| payment redirect + `/callback` + `/order-confirmation` | | | | | | |
-| `/orders` | | | | | | |
-| `/order-details/[id]` | | | | | | |
-| `/profile` | | | | | | |
-| `/addresses` | | | | | | |
-| `/personal-info` | | | | | | |
-| `/settings` | | | | | | |
-| `/help` | | | | | | |
+| `/explore` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/shops/[slug]` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/collection/[sort]` | ✅ | ✅ | — | partial | ✅ | |
+| `/checkout` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| payment redirect + `/callback` + `/order-confirmation` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/orders` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/order-details/[id]` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/profile` | ✅ | ✅ | — | ✅ | ✅ | ✅ |
+| `/addresses` | ✅ | ✅ | ✅ | ✅ | ✅ | ✅ |
+| `/personal-info` | ✅ | ✅ | ✅ | partial | ✅ | |
+| `/settings` | ✅ | — | — | ✅ | ✅ | ✅ |
+| `/help` | ✅ | — | — | ✅ | ✅ | ✅ |
 
 ### Foundation — what landed
 
@@ -328,6 +328,48 @@ Push notifications and the unread tab dot, haptics, expo splash/confetti/Skia, i
 - Stores ported: user, onboarding, cart, address, checkout, category-order — `localStorage` persist with explicit hydration in `Providers`.
 - Copy (`lib/strings.ts`) and pure helpers (order-status, city, branch, collection, store-image, search-rail, category-icons, payment-cta) ported.
 - `.env` now points at `https://staging.api.quups.app/v1`; `.env.example` documents every variable.
+
+### Register and order/payment — executed live
+
+**Register.** Ran on staging: empty-terms validation fired with the mobile's message, then a real account was created (`Web Parity Test`, +233241234567, id `56d5fad5-3c9f-4ca5-b1ba-f8e62ce6823a`), tokens stored, redirect to `/home`. **This account now exists on staging — delete it when you're done with it.**
+
+**Order + payment.** Two orders placed on that account against IKE'S Tasteland Pizza:
+- `9f865465-3e4f-4887-8ef5-8f3ed4b26deb` — GH₵90, **paid** through Paystack test mobile money, confirmation code 575393.
+- `ea438a39-2b10-45fd-8073-d8d96bec3e38` — GH₵30, left unpaid on purpose; it renders as "Waiting for payment" with the Pay now CTA.
+
+The order body carried `new_address` (the device-local address), the consent gate blocked the CTA until ticked, the basket cleared on success, and both orders appear in the Orders list with the right status tones.
+
+### Two integration findings
+
+**1. The Paystack callback returns to the backend's page, not to us.** After paying, Paystack redirects to `https://dash.quups.app/payment-redirect`, whose "VIEW ORDER" button posts a message to `window.ReactNativeWebView` — which exists only inside the native WebView. In a browser it does nothing, so a paying web customer was stranded there.
+
+Fixed inside the web app rather than waiting on a backend change: `/order-payment` now opens Paystack in a second tab and stays put as the anchor screen, polling `GET /orders/{id}` (4s while payment is PENDING, which the shared query config already does) and forwarding to `/callback/success?orderId&reference&code` the moment the backend reports PAID. Verified live — the waiting screen redirected on its own and showed "Order placed!" with the real confirmation code. It also handles a blocked popup with an explicit "Open payment" button.
+
+Still worth doing server-side: give the Paystack callback a web-aware return URL so the customer lands back on this app directly. The polling anchor works regardless, so it is not a blocker.
+
+**2. The checkout total is not what the customer is charged.** Checkout shows subtotal + a 2% (min GH₵1) service fee — GH₵91.80 for a GH₵90 basket — but the order the backend creates, and the amount Paystack collects, is GH₵90.00. This is ported behaviour: the mobile app computes the same client-side fee and the API's `total_amount` excludes it. Flagging rather than silently changing it, since the fix is a product decision (drop the fee from the display, or have the API charge it).
+
+### Change password — executed live, and it exposed a session bug
+
+Run on the test account: wrong current password → the field-level "Current password is incorrect" message; correct one → "Password changed", form cleared, session intact. Verified by signing in with the new password, then changed it back so the credentials below still hold.
+
+**The bug it exposed:** staging answers `POST /me/change-password` with **401** for a wrong current password. The client treated every 401 as an expired session, so it refreshed the token, replayed the request, got 401 again, and silently signed the customer out for a typo. `lib/api/client.ts` now marks 401s from that endpoint as domain errors (`ApiError.isDomainError`): no refresh, no replay, no logout — just the field error. The same failure exists in the mobile app, which logs out on any error whose message is `unauthorized`.
+
+### Two more fixes from this pass
+
+- **`/` ignored the mobile's entry rule.** It hard-redirected to `/lobby`; it now mirrors `app/index.tsx` — onboarded → `/home` when signed in else `/lobby`, not onboarded → `/onboarding` (`?mode=city-only` when a session exists). Verified: a signed-in, un-onboarded browser landed on the city-only step, finished it, and arrived at `/home`.
+- **Personal info never prefilled the name.** `defaultValues` latched onto the pre-hydration empty session; it now uses RHF's reactive `values`.
+
+### Still not executed
+
+1. **Password reset** — needs a live SMS code, which I can't receive.
+2. **Paystack's Cloudflare bot check** — it appeared when a checkout URL was opened twice in quick succession. That is Paystack's own protection on their domain; I did not attempt to solve it. The payment path itself is proven (one real paid order).
+
+### Test account
+
+`Web Parity Tester` · +233241234567 · `web.parity.test.0806@example.com` · password `webtest12345`. Created by this testing — **delete it when you no longer need it.**
+
+Everything else was exercised live: sign-in, the store list and its city scoping, search, product detail with modifier groups, add-to-basket, basket persistence, checkout, order placement, payment, the orders list, order detail with its timeline, saved addresses, and the category/branch/address sheets.
 
 ### Auth — verified
 

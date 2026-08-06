@@ -9,6 +9,14 @@ import {
 } from "@/stores/user";
 import { ApiError, ApiSchemaError } from "./errors";
 
+/**
+ * Endpoints where a 401 is the answer, not a verdict on the session:
+ * change-password refuses a wrong current password with 401. Refreshing and
+ * retrying there is pointless, and treating it as an expired session would log
+ * the customer out for a typo.
+ */
+const DOMAIN_401_ENDPOINTS = ["/me/change-password"];
+
 /** Endpoints that must never trigger a token refresh — they establish the session. */
 const NO_REFRESH_ENDPOINTS = [
   "/auth/signin",
@@ -94,9 +102,14 @@ export async function apiFetch<T>(
     ...(body !== undefined ? { body: JSON.stringify(body) } : {}),
   });
 
+  const isDomain401 = DOMAIN_401_ENDPOINTS.some((path) =>
+    endpoint.startsWith(path),
+  );
+
   const isRefreshable =
     response.status === 401 &&
     retry &&
+    !isDomain401 &&
     !NO_REFRESH_ENDPOINTS.some((path) => endpoint.startsWith(path)) &&
     Boolean(useUserStore.getState().user);
 
@@ -119,6 +132,7 @@ export async function apiFetch<T>(
         errorBody?.error ??
         `Request failed with status ${response.status}`,
       response.status,
+      isDomain401,
     );
   }
 

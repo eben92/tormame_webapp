@@ -8,6 +8,8 @@ export const OrderStatusEventSchema = z.object({
   created_at: z.string(),
 });
 
+export type OrderStatusEvent = z.infer<typeof OrderStatusEventSchema>;
+
 export const OrderItemModifierSchema = z.object({
   id: z.number(),
   modifier_name: z.string(),
