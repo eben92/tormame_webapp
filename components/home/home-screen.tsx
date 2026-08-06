@@ -191,7 +191,7 @@ export function HomeScreen({
         {STRINGS.home.pageHeading}
       </Text>
 
-      <div className="flex flex-col gap-3 bg-background pt-safe pb-3 md:hidden">
+      <div className="flex flex-col gap-3 bg-background pb-3 md:hidden">
         <AddressButton />
 
         <Link

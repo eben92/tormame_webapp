@@ -139,7 +139,7 @@ export function ExploreScreen({
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-3 bg-background px-4 pt-3 pt-safe pb-3 md:mx-auto md:w-full md:max-w-[1280px] md:px-8 md:pt-6">
+      <div className="flex flex-col gap-3 bg-background px-4 pt-3 pb-3 md:mx-auto md:w-full md:max-w-[1280px] md:px-8 md:pt-6">
         <Text variant="h1" className="md:hidden">
           {STRINGS.explore.title}
         </Text>

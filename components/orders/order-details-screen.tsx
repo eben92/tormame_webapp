@@ -31,7 +31,7 @@ import { cn, formatCedis } from "@/lib/utils";
 
 function DetailsHeader({ title, onBack }: { title?: string; onBack: () => void }) {
   return (
-    <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pt-safe pb-3 md:px-8">
+    <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pb-3 md:px-8">
       <button
         type="button"
         onClick={onBack}

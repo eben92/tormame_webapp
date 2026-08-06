@@ -6,6 +6,7 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Compass, LayoutGrid, Search, ShoppingBag, User } from "lucide-react";
 import { AddressButton } from "@/components/shell/address-button";
+import { BrandBar } from "@/components/shell/brand-bar";
 import { GlobalCartBar } from "@/components/shared/global-cart-bar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -192,6 +193,7 @@ function DesktopHeader() {
 export function AppShell({ children }: { children: React.ReactNode }) {
   return (
     <div className="flex min-h-dvh flex-col bg-background">
+      <BrandBar className="md:hidden" />
       <DesktopHeader />
       <div className="flex flex-1 flex-col">{children}</div>
       <React.Suspense fallback={null}>

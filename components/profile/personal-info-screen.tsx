@@ -106,7 +106,7 @@ export function PersonalInfoScreen() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pt-safe pb-3 md:px-8">
+      <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pb-3 md:px-8">
         <button
           type="button"
           onClick={() => router.back()}

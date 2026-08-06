@@ -324,6 +324,33 @@ export const STRINGS = {
     retryPayment: 'Try payment again',
     backToOrders: 'Back to orders',
   },
+  /* Web-only. The Paystack return page, ported from quups_web's
+     /payment-redirect route — same states and wording, rebuilt on this design
+     system and able to hand off inside the website instead of only back to the
+     native app. */
+  paymentVerification: {
+    documentTitle: 'Payment confirmation',
+    invalidLinkTitle: 'Invalid payment link',
+    invalidLinkMessage: 'This link is missing its payment reference, so there is nothing to confirm.',
+    confirmingMessage: 'Confirming your payment — this can take a moment.',
+    checkingHumanMessage: 'Just checking you are a person…',
+    botCheckFailedTitle: "We couldn't verify this browser",
+    botCheckFailedMessage: 'Refresh to try again. If it keeps happening, contact support with your order reference.',
+    lookupErrorTitle: 'Something went wrong',
+    lookupErrorMessage: 'We could not confirm this payment. Please contact support with your order reference if you completed payment.',
+    failedTitle: 'Payment was not successful',
+    orderReferenceLabel: (orderId: string) => `Order reference: ${orderId}`,
+    slowTitle: 'Still confirming your payment',
+    slowMessage: 'This is taking longer than usual.',
+    refresh: 'Refresh',
+    paidTitle: 'Payment received',
+    subtotal: 'Subtotal',
+    deliveryFee: 'Delivery fee',
+    total: 'Total',
+    orderIdLabel: (orderId: string) => `Order ID: ${orderId}`,
+    viewOrder: 'View order',
+    backHome: 'Back to home',
+  },
   orders: {
     title: 'My Orders',
     tabActive: 'Active',

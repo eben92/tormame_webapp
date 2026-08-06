@@ -30,7 +30,7 @@ function ChipRailSkeleton() {
 export function HomeSkeleton() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-3 pt-safe pb-3 md:hidden">
+      <div className="flex flex-col gap-3 pb-3 md:hidden">
         <div className="px-4 pt-3">
           <Skeleton className="h-6 w-40" />
         </div>
@@ -63,7 +63,7 @@ export function HomeSkeleton() {
 export function CollectionSkeleton() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center gap-3 px-4 pt-3 pt-safe pb-3 md:px-8">
+      <div className="flex items-center gap-3 px-4 pt-3 pb-3 md:px-8">
         <Skeleton className="size-12 rounded-full" />
         <Skeleton className="h-6 w-40" />
       </div>
@@ -79,7 +79,7 @@ export function CollectionSkeleton() {
 export function ExploreSkeleton() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex flex-col gap-3 px-4 pt-3 pt-safe pb-3 md:px-8">
+      <div className="flex flex-col gap-3 px-4 pt-3 pb-3 md:px-8">
         <Skeleton className="h-12 w-full rounded-full" />
       </div>
       <ChipRailSkeleton />
@@ -142,7 +142,7 @@ export function LobbySkeleton() {
 export function OrderDetailsSkeleton() {
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b border-border px-4 pt-3 pt-safe pb-3 md:px-8">
+      <div className="flex items-center gap-3 border-b border-border px-4 pt-3 pb-3 md:px-8">
         <Skeleton className="size-12 rounded-full" />
         <Skeleton className="h-6 w-40" />
       </div>

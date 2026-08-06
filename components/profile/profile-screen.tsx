@@ -146,7 +146,7 @@ export function ProfileScreen() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="bg-background px-4 pt-3 pt-safe pb-3 md:mx-auto md:w-full md:max-w-[52rem] md:px-8 md:pt-8">
+      <div className="bg-background px-4 pt-3 pb-3 md:mx-auto md:w-full md:max-w-[52rem] md:px-8 md:pt-8">
         <Text variant="h1">{STRINGS.tabs.profile}</Text>
       </div>
 

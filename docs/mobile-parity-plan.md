@@ -437,3 +437,33 @@ The desktop header's address sheet is the one overlay that survives a navigation
 - `app/sitemap.ts` lists the public routes plus every store; `app/robots.ts` disallows the session-scoped ones.
 - Store cards are real `<a>` elements now, not buttons: crawlable, prefetched, middle-clickable. Same for "See all".
 - Exactly one `<h1>` per page. `/home` has no visible page title in the mobile design, so its heading is screen-reader-only rather than invented.
+
+---
+
+## Site identity on mobile
+
+Mobile parity means the *screens* match the native app, not that the website hides whose it is. Every route now carries the logo and wordmark:
+
+- `BrandBar` sits above the content on mobile inside `AppShell`, and above the card on the auth screens (`BrandMark`, centred, on desktop — where the card is the whole page and the app header isn't rendered).
+- It is not sticky. Several screens already pin their own bars to the top of the viewport (the shop's category rail), and a second sticky layer would either cover them or force every one of them to know this bar's height.
+- The bar owns the top safe-area inset, so the screens beneath it dropped their own `pt-safe` — otherwise an iPhone would pay the inset twice.
+- Desktop is unchanged: the sticky marketplace header already carries the brand, and `BrandBar` is `md:hidden`.
+
+## Payment confirmation (`/payment-redirect`)
+
+Ported from `quups_web`'s `/payment-redirect` route, rebuilt on this design system. Same contract, same states, same polling cadence (five checks, three seconds apart): missing reference, verifying, confirming, lookup failure, payment failed, confirmation taking too long (with Refresh), and the paid receipt with its line items, subtotal, delivery fee and total.
+
+Two things differ from the original:
+
+- **It works for web customers.** The original only knows how to hand off through `window.ReactNativeWebView`. This one still does that when it is loaded inside the app's WebView, and otherwise navigates within the website — "View order" goes to `/order-details/{id}`, "Back to home" to `/home`.
+- **Polling is derived, not counted.** The window is a timestamp comparison, and `refetchInterval` stops itself on a final status or once the window has elapsed, so there is no counter state updated from an effect.
+
+`payment_status` is read as a plain string rather than a Zod enum: this is the last screen a customer sees after paying, and it must not fail closed because the backend added a status we haven't seen. Anything unrecognised falls through to "still confirming".
+
+The page in `quups_web` stays where it is — this one is additive, and the backend can point its Paystack callback here when you're ready.
+
+### Bot protection
+
+The lookup is public and takes a reference, so it is worth protecting. `/payment-redirect` runs an invisible reCAPTCHA v3 check (`hooks/use-recaptcha.ts`) and has the server verify the token at `app/api/recaptcha` — the secret never reaches the browser, which is the only reason that route exists. Score threshold is Google's default 0.5, and the action is checked against the token.
+
+Two deliberate escape hatches: with no keys configured the check is skipped (local development shouldn't need Google credentials), and if Google itself is unreachable the client passes rather than stranding someone who has just paid — the server-side check is what actually gates abuse. Keys go in `NEXT_PUBLIC_RECAPTCHA_SITE_KEY` and `RECAPTCHA_SECRET_KEY`; both are documented in `.env.example`.

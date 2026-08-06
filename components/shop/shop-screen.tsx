@@ -117,7 +117,7 @@ export function ShopScreen({
 
   if (company.isLoading || menu.isLoading) {
     return (
-      <div className="flex flex-1 flex-col pt-safe">
+      <div className="flex flex-1 flex-col">
         <ShopHeroSkeleton />
       </div>
     );
@@ -164,7 +164,7 @@ export function ShopScreen({
           <div className="absolute inset-0 bg-linear-to-b from-(--header-scrim-top) to-(--header-scrim-bottom)" />
         </div>
 
-        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3 pt-safe">
+        <div className="absolute inset-x-0 top-0 flex items-center justify-between px-4 pt-3">
           <button
             type="button"
             onClick={() => router.back()}

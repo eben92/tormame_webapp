@@ -409,7 +409,7 @@ export function CheckoutScreen() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pt-safe pb-3 md:hidden">
+      <div className="flex items-center gap-3 border-b border-border bg-background px-4 pt-3 pb-3 md:hidden">
         <button
           type="button"
           onClick={() => router.back()}

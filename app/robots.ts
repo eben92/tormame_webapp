@@ -18,6 +18,7 @@ export default function robots(): MetadataRoute.Robots {
         "/order-details/",
         "/order-payment",
         "/orders",
+        "/payment-redirect",
         "/personal-info",
         "/profile",
         "/settings",

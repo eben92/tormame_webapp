@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import { ArrowLeft, X } from "lucide-react";
+import { BrandBar, BrandMark } from "@/components/shell/brand-bar";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { getErrorCopy } from "@/lib/api/errors";
@@ -36,10 +37,15 @@ export function AuthShell({
 
   return (
     <div className="flex min-h-dvh flex-col bg-background md:items-center md:justify-center md:py-12">
-      <div className="flex min-h-dvh w-full flex-col md:min-h-0 md:max-w-[28rem] md:rounded-card md:border md:border-border md:bg-card md:shadow-e2">
+      {/* Signing in is often the first page someone lands on, so it has to say
+          whose site this is: a bar on mobile, above the card on desktop. */}
+      <BrandBar href="/lobby" className="md:hidden" />
+      <BrandMark href="/lobby" size={32} className="mb-6 hidden md:flex" />
+
+      <div className="flex w-full flex-1 flex-col md:min-h-0 md:max-w-[28rem] md:flex-none md:rounded-card md:border md:border-border md:bg-card md:shadow-e2">
         <div
           className={cn(
-            "flex items-center px-4 pt-3 pb-2 pt-safe md:px-6 md:pt-6",
+            "flex items-center px-4 pt-3 pb-2 md:px-6 md:pt-6",
             dismiss.kind === "close" ? "justify-end" : "justify-start",
           )}
         >
