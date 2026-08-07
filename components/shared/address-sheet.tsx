@@ -17,7 +17,7 @@ import { useCreateAddress, useGetAddresses } from "@/lib/api/services/addresses"
 import type { Address, LocalAddress } from "@/lib/api/schemas/account";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
-import { useAddressStore } from "@/stores/address";
+import { useAddressStore, type ResolvedAddress } from "@/stores/address";
 import { useOnboardingStore } from "@/stores/onboarding";
 import { useUserStore } from "@/stores/user";
 
@@ -73,6 +73,18 @@ type AddressSheetProps = {
   onOpenChange: (open: boolean) => void;
   /** Rendered as the sheet's own trigger so the primitive manages focus. */
   trigger?: React.ReactNode;
+  /** Overrides the list heading — checkout asks the question its own way. */
+  title?: string;
+  /** One line under the heading. Only used when `title` is given. */
+  subtitle?: string;
+  /** Overrides the form's submit label, e.g. "Use this address and place order". */
+  ctaLabel?: string;
+  /**
+   * Fires with the address the customer just chose or typed, alongside the
+   * store update. Checkout uses it to carry straight on to payment, which the
+   * store alone cannot do: its new value is not readable until the next render.
+   */
+  onResolved?: (resolved: ResolvedAddress) => void;
 };
 
 /**
@@ -86,21 +98,45 @@ export function AddressSheet({
   open,
   onOpenChange,
   trigger,
+  title,
+  subtitle,
+  ctaLabel,
+  onResolved,
 }: AddressSheetProps) {
   return (
     <ResponsiveSheet
       open={open}
       onOpenChange={onOpenChange}
       trigger={trigger}
-      title={STRINGS.address.sheetTitle}
+      title={title ?? STRINGS.address.sheetTitle}
       hideTitle
     >
-      {open ? <AddressSheetBody onClose={() => onOpenChange(false)} /> : null}
+      {open ? (
+        <AddressSheetBody
+          onClose={() => onOpenChange(false)}
+          title={title}
+          subtitle={subtitle}
+          ctaLabel={ctaLabel}
+          onResolved={onResolved}
+        />
+      ) : null}
     </ResponsiveSheet>
   );
 }
 
-function AddressSheetBody({ onClose }: { onClose: () => void }) {
+function AddressSheetBody({
+  onClose,
+  title,
+  subtitle,
+  ctaLabel,
+  onResolved,
+}: {
+  onClose: () => void;
+  title?: string;
+  subtitle?: string;
+  ctaLabel?: string;
+  onResolved?: (resolved: ResolvedAddress) => void;
+}) {
   const user = useUserStore((state) => state.user);
   const isAuthenticated = Boolean(user);
 
@@ -182,6 +218,7 @@ function AddressSheetBody({ onClose }: { onClose: () => void }) {
 
     if (!isAuthenticated) {
       setLocalAddress(payload);
+      onResolved?.({ source: "local", address: payload });
       close();
       return;
     }
@@ -191,6 +228,7 @@ function AddressSheetBody({ onClose }: { onClose: () => void }) {
       {
         onSuccess: (address) => {
           selectAddress(address.id);
+          onResolved?.({ source: "saved", address });
           close();
         },
         onError: () => toast.error(STRINGS.address.createErrorToast),
@@ -201,8 +239,10 @@ function AddressSheetBody({ onClose }: { onClose: () => void }) {
   const handleSelect = (entry: ListEntry) => {
     if (entry.kind === "local") {
       selectLocalAddress();
+      onResolved?.({ source: "local", address: entry.address });
     } else {
       selectAddress(entry.address.id);
+      onResolved?.({ source: "saved", address: entry.address });
     }
     close();
   };
@@ -214,12 +254,15 @@ function AddressSheetBody({ onClose }: { onClose: () => void }) {
 
   return (
     <>
-      <div className="px-5 pb-3">
+      <div className="flex flex-col gap-1 px-5 pb-3">
         <Text variant="h3">
           {effectiveMode === "list"
-            ? STRINGS.address.sheetTitle
+            ? (title ?? STRINGS.address.sheetTitle)
             : STRINGS.address.addNewAddress}
         </Text>
+        {effectiveMode === "list" && subtitle ? (
+          <Text variant="body-small">{subtitle}</Text>
+        ) : null}
       </div>
       <div className="px-5">
         <div className="border-t border-border/60" />
@@ -441,7 +484,7 @@ function AddressSheetBody({ onClose }: { onClose: () => void }) {
               className="mt-2"
               isLoading={createAddress.isPending}
             >
-              {STRINGS.address.saveAddress}
+              {ctaLabel ?? STRINGS.address.saveAddress}
             </Button>
           </form>
         )}

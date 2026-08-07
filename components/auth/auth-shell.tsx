@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { ArrowLeft, X } from "lucide-react";
+import { ArrowLeft, Info, X } from "lucide-react";
 import { BrandBar, BrandMark } from "@/components/shell/brand-bar";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
@@ -15,6 +15,12 @@ type AuthShellProps = {
   /** `close` shows an X on the right (sign-in); `back` shows an arrow on the left. */
   dismiss: { kind: "close" | "back"; onDismiss: () => void };
   error?: unknown;
+  /**
+   * Why the customer is here, when they did not choose to be — sent from
+   * checkout, say. Sits above the form so the screen explains itself rather
+   * than reading as an interruption.
+   */
+  notice?: string | null;
   children: React.ReactNode;
   /** Sticky CTA area — pinned to the bottom on mobile, in-flow on desktop. */
   footer: React.ReactNode;
@@ -30,6 +36,7 @@ export function AuthShell({
   subtitle,
   dismiss,
   error,
+  notice,
   children,
   footer,
 }: AuthShellProps) {
@@ -73,6 +80,22 @@ export function AuthShell({
               {subtitle}
             </Text>
           </div>
+
+          {notice ? (
+            <div
+              role="status"
+              className="flex items-start gap-2.5 rounded-card border border-primary/20 bg-primary/5 p-3"
+            >
+              <Info
+                size={18}
+                className="mt-0.5 shrink-0 text-primary"
+                aria-hidden
+              />
+              <Text variant="body-small" className="flex-1 text-foreground">
+                {notice}
+              </Text>
+            </div>
+          ) : null}
 
           {error ? (
             <div role="alert" className="rounded-card bg-destructive/10 p-3">

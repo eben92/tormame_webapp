@@ -1,9 +1,10 @@
 "use client";
 
 import * as React from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
-import { ArrowLeft, ChevronRight } from "lucide-react";
+import { ArrowLeft, ChevronRight, Trash2 } from "lucide-react";
 import { FilterChip } from "@/components/ui/filter-chip";
 import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
@@ -110,6 +111,34 @@ export function SettingsScreen() {
           <Text variant="body-strong">{STRINGS.settings.versionRowLabel}</Text>
           <Text variant="body-small">{ENV.APP_VERSION}</Text>
         </div>
+
+        {/* Shown to everyone, signed in or not: the page itself explains that
+            deleting needs an account, and a customer looking for this must be
+            able to find it without first working out where it hides. */}
+        <section className="flex flex-col gap-1">
+          <Text variant="caption" className="px-1">
+            {STRINGS.settings.accountSectionTitle}
+          </Text>
+          <div className="overflow-hidden rounded-card border border-border bg-card">
+            <Link
+              href="/delete-account"
+              className={cn(
+                "flex min-h-12 items-center justify-between gap-3 px-4 py-3.5 hover:bg-muted/60",
+                focusRing,
+              )}
+            >
+              <span className="flex items-center gap-3">
+                <span className="flex size-10 shrink-0 items-center justify-center rounded-full bg-destructive/10">
+                  <Trash2 size={18} className="text-destructive" aria-hidden />
+                </span>
+                <Text as="span" variant="body-strong" className="text-destructive">
+                  {STRINGS.settings.deleteAccountRow}
+                </Text>
+              </span>
+              <ChevronRight size={16} className="text-muted-foreground" aria-hidden />
+            </Link>
+          </div>
+        </section>
       </div>
     </div>
   );

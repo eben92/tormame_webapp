@@ -32,6 +32,23 @@ export type LocalAddress = {
   phone?: string;
 };
 
+/**
+ * A pending request to delete the account and its personal data. The API
+ * returns null when nothing is scheduled, which is the ordinary case.
+ */
+export const AccountDeletionRequestSchema = z.object({
+  id: z.string(),
+  status: z.string(),
+  reason: z.string().nullish(),
+  requested_at: z.string(),
+  /** When the account is actually scrubbed, unless it is cancelled first. */
+  scheduled_for: z.string(),
+});
+
+export type AccountDeletionRequest = z.infer<
+  typeof AccountDeletionRequestSchema
+>;
+
 export type CreateAddressInput = LocalAddress & {
   label?: string;
   latitude?: number;

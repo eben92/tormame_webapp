@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -17,6 +17,11 @@ import { Text } from "@/components/ui/text";
 import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { useSignin } from "@/lib/api/services/auth";
 import { ENV } from "@/lib/env";
+import {
+  authQuery,
+  parseAuthReason,
+  safeRedirectPath,
+} from "@/lib/safe-redirect";
 import { STRINGS } from "@/lib/strings";
 import { cn } from "@/lib/utils";
 
@@ -79,7 +84,16 @@ function IdentifierMethodToggle({
 
 export function SignInScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const { mutate, isPending, error } = useSignin();
+
+  // Where the customer was headed, and why they were sent here. Both travel on
+  // to create-account so someone without an account keeps their place.
+  const redirectParam = searchParams.get("redirect");
+  const reasonParam = searchParams.get("reason");
+  const destination = safeRedirectPath(redirectParam);
+  const reason = parseAuthReason(reasonParam);
+  const registerHref = `/auth/register${authQuery(redirectParam, reasonParam)}`;
 
   const {
     control,
@@ -97,7 +111,7 @@ export function SignInScreen() {
   const onSubmit = (data: SignInFormData) => {
     mutate(
       { identifier: data.identifier, password: data.password },
-      { onSuccess: () => router.replace("/home") },
+      { onSuccess: () => router.replace(destination) },
     );
   };
 
@@ -113,6 +127,7 @@ export function SignInScreen() {
       subtitle={STRINGS.auth.signin.subtitle}
       dismiss={{ kind: "close", onDismiss: () => router.replace("/") }}
       error={error}
+      notice={reason ? STRINGS.auth.reasons[reason] : null}
       footer={
         <>
           <Button
@@ -125,7 +140,7 @@ export function SignInScreen() {
               ? STRINGS.auth.signin.signingIn
               : STRINGS.auth.signin.continueCta}
           </Button>
-          <Button variant="ghost" onClick={() => router.push("/auth/register")}>
+          <Button variant="ghost" onClick={() => router.push(registerHref)}>
             <Text as="span" variant="body-small">
               {STRINGS.auth.signin.noAccountPrompt}{" "}
               <Text as="span" variant="body-small" className="font-bold text-primary">

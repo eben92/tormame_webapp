@@ -159,6 +159,14 @@ export function LobbyFooter() {
                 {STRINGS.footer.cookies}
               </Link>
             </li>
+            {/* Google Play asks for a publicly reachable page where an account
+                and its data can be deleted, whether or not the app is installed.
+                This is that page. */}
+            <li>
+              <Link href="/delete-account" className={footerLink}>
+                {STRINGS.footer.deleteAccount}
+              </Link>
+            </li>
           </FooterColumn>
 
           <div className="flex flex-col gap-3">

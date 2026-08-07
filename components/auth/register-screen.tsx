@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { Controller, useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,6 +15,11 @@ import {
 } from "@/components/ui/phone-input";
 import { Text } from "@/components/ui/text";
 import { useRegister } from "@/lib/api/services/auth";
+import {
+  authQuery,
+  parseAuthReason,
+  safeRedirectPath,
+} from "@/lib/safe-redirect";
 import { STRINGS } from "@/lib/strings";
 import { useOnboardingStore } from "@/stores/onboarding";
 
@@ -33,6 +38,15 @@ type RegisterFormData = z.infer<typeof registerSchema>;
 
 export function RegisterScreen() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  // Someone sent here mid-checkout finishes where they left off, not on the
+  // home page with an empty-looking basket.
+  const redirectParam = searchParams.get("redirect");
+  const reasonParam = searchParams.get("reason");
+  const destination = safeRedirectPath(redirectParam);
+  const reason = parseAuthReason(reasonParam);
+  const signinHref = `/auth/signin${authQuery(redirectParam, reasonParam)}`;
   const { mutate, isPending, error } = useRegister();
   const onboardingName = useOnboardingStore((state) => state.name);
   const onboardingPhone = useOnboardingStore((state) => state.phone);
@@ -57,7 +71,7 @@ export function RegisterScreen() {
   const onSubmit = (data: RegisterFormData) => {
     mutate(
       { ...data, marketing_consent: data.marketing_consent ?? false },
-      { onSuccess: () => router.replace("/home") },
+      { onSuccess: () => router.replace(destination) },
     );
   };
 
@@ -66,6 +80,7 @@ export function RegisterScreen() {
       title={STRINGS.auth.register.title}
       subtitle={STRINGS.auth.register.subtitle}
       dismiss={{ kind: "back", onDismiss: () => router.back() }}
+      notice={reason ? STRINGS.auth.reasons[reason] : null}
       error={error}
       footer={
         <>
@@ -79,7 +94,7 @@ export function RegisterScreen() {
               ? STRINGS.auth.register.creatingAccount
               : STRINGS.auth.register.createAccountCta}
           </Button>
-          <Button variant="ghost" onClick={() => router.push("/auth/signin")}>
+          <Button variant="ghost" onClick={() => router.push(signinHref)}>
             <Text as="span" variant="body-small">
               {STRINGS.auth.register.alreadyHaveAccount}{" "}
               <Text
