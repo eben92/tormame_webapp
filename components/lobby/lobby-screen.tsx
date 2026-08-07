@@ -2,6 +2,7 @@
 
 import * as React from "react";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, Loader2, Search } from "lucide-react";
 import { useGSAP } from "@gsap/react";
@@ -12,7 +13,6 @@ import { focusRing, pressableScale } from "@/components/ui/pressable";
 import { CategoryTiles } from "@/components/lobby/category-tiles";
 import { LobbyAddressButton } from "@/components/lobby/lobby-address-button";
 import { DEFAULT_APP_PATH, appEntryPath } from "@/lib/app-entry";
-import { ENV } from "@/lib/env";
 import type { CategoriesGroup } from "@/lib/api/schemas/catalog";
 import {
   useGetCategories,
@@ -148,12 +148,11 @@ export function LobbyScreen({
             <BrandMark size={26} />
             <div className="flex items-center gap-1 md:gap-3">
               <LobbyAddressButton className="hidden lg:flex" />
-              {/* Vendor onboarding lives on its own site, so this is a real
-                  link out rather than a route. */}
-              <a
-                href={ENV.VENDOR_URL}
-                target="_blank"
-                rel="noreferrer noopener"
+              {/* The partners page, not the vendor portal. Someone reading
+                  the landing page has not decided yet, and a login form is a
+                  poor answer to "what is this". */}
+              <Link
+                href="/partners"
                 title={STRINGS.lobby.becomePartnerHint}
                 className={cn(
                   "inline-flex rounded-full px-2 py-2 font-sans text-xs font-bold whitespace-nowrap text-white",
@@ -163,7 +162,7 @@ export function LobbyScreen({
                 )}
               >
                 {STRINGS.lobby.becomePartner}
-              </a>
+              </Link>
               {showSignIn ? (
                 <Button
                   variant="ghost"

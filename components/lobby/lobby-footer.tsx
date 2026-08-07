@@ -132,14 +132,12 @@ export function LobbyFooter() {
               </Link>
             </li>
             <li>
-              <a
-                href={ENV.VENDOR_URL}
-                target="_blank"
-                rel="noreferrer noopener"
-                className={footerLink}
-              >
+              {/* Our own page rather than the vendor portal: signing up is a
+                  decision, and the portal opens on a login form that explains
+                  nothing to someone still deciding. */}
+              <Link href="/partners" className={footerLink}>
                 {STRINGS.footer.partner}
-              </a>
+              </Link>
             </li>
           </FooterColumn>
 
