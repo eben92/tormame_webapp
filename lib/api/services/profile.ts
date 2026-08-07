@@ -49,9 +49,13 @@ export function useAccountDeletionRequest(options?: { enabled?: boolean }) {
     queryKey: DELETION_REQUEST_KEY,
     queryFn: () =>
       apiFetch("/me/deletion-request", {
-        schema: AccountDeletionRequestSchema.nullish(),
+        // Normalised to null rather than left undefined: the API omits `data`
+        // entirely when nothing is scheduled, and React Query rejects an
+        // undefined result outright.
+        schema: AccountDeletionRequestSchema.nullish().transform(
+          (request) => request ?? null,
+        ),
       }),
-    select: (data) => data ?? null,
     enabled: options?.enabled ?? true,
     // Deletion is a decision, not a feed: always show what the server holds
     // rather than a cached answer from before the customer acted.
