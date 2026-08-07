@@ -541,149 +541,86 @@ export const STRINGS = {
       subtitle: 'We use this to show shops near you',
     },
   },
-  /* The partners landing page. Written for a shop owner who runs a counter and
-     a phone, not for a marketing audience: short sentences, no jargon, no
-     claim we cannot keep. Rates and payout timing live in the vendor
-     agreement, so nothing here invents a number. */
+  /* The partners landing page. The reader is a shop or restaurant owner who has
+     never sold online before, so the page argues rather than describes: why
+     bother, what it costs, what happens next. Kept short on purpose. The fee
+     and the free allowance come from ENV, since the commercial model is not a
+     code decision. */
   partners: {
     metaTitle: 'Sell on Tormame',
     metaDescription:
-      'Put your shop in front of every phone in your town. Take orders on your phone, hand them over with a code, and see what each order earned you.',
+      'Take your restaurant or shop online in Ghana. No website to build, no monthly fee, and your first sales cost you nothing.',
     navBack: 'Back to Tormame',
     openPortal: 'Open the vendor portal',
     openPortalHint: 'Opens the vendor portal in a new tab',
-    seeHow: 'See how it works',
+    seePricing: 'See what it costs',
 
-    headline: 'Your shop, open to every phone in town.',
+    headline: 'Your business, online and taking orders.',
     subhead:
-      'List what you sell, take the order on your phone, hand it over. We bring you the customers and keep count of every cedi.',
-    heroNote: 'Free to list. You need a phone and your shop name to start.',
+      'Tormame gives your business a place to sell, customers to sell to, and payment that lands as soon as they buy. You do not need a website or anyone technical.',
+    heroNote: (freeSales: number) =>
+      `Your first ${freeSales} sales are free.`,
 
-    factsTitle: 'What it takes to start',
-    facts: [
+    whyTitle: 'Why sell here',
+    why: [
       {
-        title: 'A phone you already own',
-        body: 'The portal runs in the browser on your phone. No laptop, no app to install, no new device to buy.',
+        title: 'Customers are already looking',
+        body: 'People open Tormame to buy food, medicine and goods today. Being listed puts you in front of them without you spending on advertising.',
       },
       {
-        title: 'Your shop and your prices',
-        body: 'You type in what you sell and what it costs. Nobody changes your prices but you.',
+        title: 'No website, no computer',
+        body: 'Your shop page is made for you. You add items from your phone, and change a price or mark something sold out in a couple of taps.',
       },
       {
-        title: 'One number for your account',
-        body: 'Sign up with the number you already give customers. That number is how we reach you about an order.',
+        title: 'The money reaches you',
+        body: 'Customers pay in the app by mobile money or card. Verified shops are paid as soon as the customer pays, and every sale is listed with its amount.',
       },
     ],
+
+    sellTitle: 'What people sell on Tormame',
+
+    partnersTitle: 'Businesses on Tormame',
+
+    pricingTitle: 'What it costs',
+    pricingFreeLabel: 'Your first sales',
+    pricingFreeValue: (freeSales: number) => `${freeSales} sales free`,
+    pricingFreeBody:
+      'List your shop, add your items and start selling without paying anything.',
+    pricingFeeLabel: 'After that',
+    pricingFeeValue: (percent: number) => `${percent}% a sale`,
+    pricingFeeBody:
+      'A service fee on each sale you make. Nothing to pay in a month where you sell nothing.',
+    pricingNote:
+      'No monthly charge and no joining fee. You keep setting your own prices.',
 
     howTitle: 'How it works',
-    howLead:
-      'Four steps. Most shops are taking orders the same day they sign up.',
     steps: [
       {
-        title: 'Create your account',
-        body: 'Open the vendor portal, enter your number and your shop name, and set a password. That is the whole form.',
+        title: 'Apply with your shop details',
+        body: 'Fill in your shop name and contact details on the vendor portal, and upload your documents.',
       },
       {
-        title: 'Add what you sell',
-        body: 'Type each item once, with its price. Add sizes and extras if you have them, so a customer picks exactly what they want and pays the right amount.',
+        title: 'We check and switch you on',
+        body: 'Once your shop is approved you add what you sell, with your own prices, sizes and extras.',
       },
       {
-        title: 'Take the orders',
-        body: 'A new order shows up on your phone with everything the customer chose. You accept it, prepare it, and mark it ready.',
-      },
-      {
-        title: 'Hand over and get paid',
-        body: 'The customer reads out a six digit code at pickup or the courier carries it. The order closes and the amount lands in your wallet on the portal.',
+        title: 'Sell and get paid',
+        body: 'Customers order and pay in the app. Verified shops receive their money as soon as the customer pays.',
       },
     ],
 
-    getTitle: 'What you get',
-    getLead: 'Everything here is in the portal on the day you sign up.',
-    features: {
-      orders: {
-        title: 'Orders arrive on your phone',
-        body: 'Item, size, extras, and the note the customer left. Nothing is written on a scrap of paper and nothing is lost when the queue is long.',
-      },
-      pricing: {
-        title: 'You set every price',
-        body: 'Change a price, mark something sold out, or hide an item for the day. It updates for customers straight away.',
-      },
-      branches: {
-        title: 'Every branch, one account',
-        body: 'Run two shops or ten. Each branch keeps its own menu and its own orders.',
-      },
-      staff: {
-        title: 'Your staff, their own logins',
-        body: 'Give a supervisor access to one branch only. You keep the owner account.',
-      },
-      money: {
-        title: 'You can see what every order earned',
-        body: 'Each completed order is listed in your wallet with its amount and its date, so your takings match your records without you keeping a second book.',
-      },
-    },
-
-    valuesTitle: 'What we hold ourselves to',
-    values: [
-      {
-        title: 'We do not touch your prices',
-        body: 'You are the shop. What you charge is your decision, and it reaches the customer exactly as you typed it.',
-      },
-      {
-        title: 'You get paid for work you finished',
-        body: 'Every order you complete is recorded with its amount. Rates and payout timing are written into the agreement you sign before you start.',
-      },
-      {
-        title: 'A person answers when you call',
-        body: 'When an order goes wrong you talk to someone who can look it up, not a form that promises a reply in five days.',
-      },
+    requirementsTitle: 'What you need to start',
+    requirementsLead: 'Have these ready and the application takes a few minutes.',
+    requirements: [
+      'Your shop name and a phone number we can reach you on',
+      'Your Ghana Card, front and back',
+      'Your business registration certificate',
+      'A mobile money or bank account for your payouts',
+      'Photos and prices for what you sell',
     ],
 
-    simpleTitle: 'Built for the shop you actually run',
-    simpleBody:
-      'Most people selling on Tormame have never used software to run a shop before. That shaped every screen. Big buttons, plain words, and one thing to do on each page. If you can send a message on your phone, you can run your shop here.',
-    simplePoints: [
-      'Works on a small screen and a slow connection',
-      'Plain English, no menus hidden behind menus',
-      'Nothing is deleted by accident, and mistakes can be undone',
-    ],
-
-    faqTitle: 'Questions shop owners ask us',
-    faq: [
-      {
-        question: 'Do I need a computer?',
-        answer:
-          'No. The vendor portal opens in the browser on your phone and does everything a laptop would. Use a laptop if you have one and prefer the bigger screen.',
-      },
-      {
-        question: 'How will customers find my shop?',
-        answer:
-          'Your shop appears when someone picks your town and browses the category you sell in. Customers also reach you through search on the app and the website.',
-      },
-      {
-        question: 'What happens if I run out of something?',
-        answer:
-          'Mark it sold out in the portal. It stops appearing for customers immediately, and nobody can order it until you put it back.',
-      },
-      {
-        question: 'How do I know an order was really collected?',
-        answer:
-          'Every order carries a six digit code. The customer reads it out at pickup, or the courier carries it for a delivery. The order only closes once that code matches.',
-      },
-      {
-        question: 'When do I receive my money?',
-        answer:
-          'Each completed order is added to your wallet on the portal with its amount and date. Payout timing and any fees are set out in the vendor agreement you sign when you join.',
-      },
-      {
-        question: 'I only sell in one town. Is that a problem?',
-        answer:
-          'No. Tormame was built for towns, not only for the big cities. You pick the town or towns you serve, and only customers there see your shop.',
-      },
-    ],
-
-    closingTitle: 'Put your shop online today',
-    closingBody:
-      'Signing up takes a few minutes. Adding your first item takes a few more. After that you are open.',
+    closingTitle: 'Start selling this week',
+    closingBody: 'Apply today. Add your items once you are approved, and you are open.',
   },
   webview: {
     fallbackTitle: 'Web page',
