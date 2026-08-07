@@ -16,7 +16,7 @@ export function BrandMark({
   return (
     <Link
       href={href}
-      aria-label="TORMAME — home"
+      aria-label="TORMAME home"
       className={cn("flex items-center gap-2", focusRing, className)}
     >
       <Image

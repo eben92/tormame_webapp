@@ -16,7 +16,7 @@ const dmSans = DM_Sans({
   display: "swap",
 });
 
-const TITLE = "TORMAME — Food & groceries delivered fast";
+const TITLE = "TORMAME: food and groceries delivered fast";
 const DESCRIPTION =
   "Order food, groceries and more from restaurants and shops near you, delivered fast.";
 

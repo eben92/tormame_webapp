@@ -61,7 +61,7 @@ export const TERMS_DOCUMENT: LegalDocument = {
     {
       heading: "3. Placing an order",
       body: [
-        "When you place an order you are making an offer to buy from the vendor. The order is accepted when the vendor confirms it. Until then it can be declined — most often because an item has run out or the vendor has closed.",
+        "When you place an order you are making an offer to buy from the vendor. The order is accepted when the vendor confirms it. Until then it can be declined, most often because an item has run out or the vendor has closed.",
         "We show vendor menus, prices and opening hours as the vendor gives them to us. Occasionally an item is unavailable after you have ordered; when that happens the vendor or our support team will contact you to substitute or refund it.",
       ],
     },
@@ -84,7 +84,7 @@ export const TERMS_DOCUMENT: LegalDocument = {
       heading: "6. Cancellations and refunds",
       body: [
         "You can cancel free of charge until the vendor starts preparing your order. After that, a cancellation may be charged in full, because the vendor has already spent time and ingredients on it.",
-        "If your order arrives damaged, incomplete, or is never delivered, contact us within 24 hours with your order number and, where you can, a photograph. We will investigate with the vendor and courier and put it right — a refund, a redelivery or a credit, depending on what happened.",
+        "If your order arrives damaged, incomplete, or is never delivered, contact us within 24 hours with your order number and, where you can, a photograph. We will investigate with the vendor and courier and put it right with a refund, a redelivery or a credit, depending on what happened.",
         "Refunds go back to the payment method you used. Mobile-money and card refunds usually take between one and ten working days to appear, depending on your provider.",
       ],
     },
@@ -128,7 +128,7 @@ export const TERMS_DOCUMENT: LegalDocument = {
       heading: "12. Law and disputes",
       body: [
         "These terms are governed by the laws of the Republic of Ghana, and the courts of Ghana have jurisdiction over any dispute.",
-        `Talk to us first — most problems are settled the same day at ${ENV.CONTACT_EMAIL}.`,
+        `Talk to us first. Most problems are settled the same day at ${ENV.CONTACT_EMAIL}.`,
       ],
     },
   ],
@@ -149,12 +149,12 @@ export const PRIVACY_DOCUMENT: LegalDocument = {
       heading: "1. What we collect",
       body: ["Depending on how you use Tormame, we hold:"],
       bullets: [
-        "Account details — your name, phone number and email address.",
-        "Delivery details — the addresses you save, and any note you leave for the courier.",
-        "Order details — what you ordered, from whom, when, and what you paid.",
-        "Payment details — the method used and the reference our payment processor returns. We never receive your full card number, your card's security code or your mobile-money PIN.",
-        "Support messages — what you tell us when you contact us about an order.",
-        "Technical data — device type, browser, approximate location derived from your address, and error reports that tell us when something broke.",
+        "Account details: your name, phone number and email address.",
+        "Delivery details: the addresses you save, and any note you leave for the courier.",
+        "Order details: what you ordered, from whom, when, and what you paid.",
+        "Payment details: the method used and the reference our payment processor returns. We never receive your full card number, your card's security code or your mobile-money PIN.",
+        "Support messages: what you tell us when you contact us about an order.",
+        "Technical data: device type, browser, approximate location derived from your address, and error reports that tell us when something broke.",
       ],
     },
     {
@@ -163,7 +163,7 @@ export const PRIVACY_DOCUMENT: LegalDocument = {
         "To take, pass on and deliver your orders, and to keep you updated on them.",
         "To take payment and, where it is due, to make a refund.",
         "To answer your questions and investigate problems with an order.",
-        "To keep the service secure — spotting fraudulent orders and abusive use.",
+        "To keep the service secure by spotting fraudulent orders and abusive use.",
         "To improve the service, using aggregated figures rather than individual histories.",
         "To send you service messages. Marketing messages are only sent if you ask for them, and every one has a way to stop them.",
       ],
@@ -178,8 +178,8 @@ export const PRIVACY_DOCUMENT: LegalDocument = {
       heading: "4. Who we share it with",
       body: ["We share only what each party needs to do its job:"],
       bullets: [
-        "The vendor you ordered from — your first name, order contents and delivery details.",
-        "The courier delivering your order — your name, phone number and address.",
+        "The vendor you ordered from: your first name, order contents and delivery details.",
+        "The courier delivering your order: your name, phone number and address.",
         "Paystack, our payment processor, which handles card and mobile-money transactions.",
         "Google reCAPTCHA, which checks that payment-confirmation pages are opened by a person and not a bot.",
         "Our hosting and error-reporting providers, which store data on our behalf under contract.",
@@ -244,7 +244,7 @@ export const COOKIES_DOCUMENT: LegalDocument = {
     "The cookies and browser storage Tormame uses, what each one is for, and how to clear them.",
   updated: UPDATED,
   intro: [
-    "This policy covers cookies and the other storage we use in your browser — local storage works much like a cookie, so we describe both here.",
+    "This policy covers cookies and the other storage we use in your browser. Local storage works much like a cookie, so we describe both here.",
     "We use no advertising or cross-site tracking cookies.",
   ],
   sections: [
@@ -254,11 +254,11 @@ export const COOKIES_DOCUMENT: LegalDocument = {
         "Everything below is strictly necessary: remove it and the site stops being able to keep you signed in or remember your basket.",
       ],
       bullets: [
-        "Sign-in session — keeps you signed in between visits so you do not re-enter a code on every page.",
-        "Basket — remembers what you added, so it survives a refresh.",
-        "Delivery address — remembers the address you chose, including the device-only address a guest sets.",
-        "Onboarding — remembers the town you picked and that you have finished the introduction.",
-        "Appearance — remembers whether you chose the light or dark theme.",
+        "Sign-in session: keeps you signed in between visits so you do not re-enter a code on every page.",
+        "Basket: remembers what you added, so it survives a refresh.",
+        "Delivery address: remembers the address you chose, including the device-only address a guest sets.",
+        "Onboarding: remembers the town you picked and that you have finished the introduction.",
+        "Appearance: remembers whether you chose the light or dark theme.",
       ],
     },
     {

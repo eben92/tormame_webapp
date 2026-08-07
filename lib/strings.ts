@@ -77,7 +77,7 @@ export const STRINGS = {
     },
     forgotPassword: {
       title: 'Reset your password',
-      subtitle: "Step 1 of 2 — Enter your phone number and we'll text you a reset code.",
+      subtitle: "Step 1 of 2. Enter your phone number and we'll text you a reset code.",
       phoneNumberLabel: 'Phone number',
       sendCodeCta: 'Send reset code',
       sendingCode: 'Sending your code…',
@@ -89,14 +89,14 @@ export const STRINGS = {
       resendErrorToast: 'Could not resend the code. Please try again.',
       otp: {
         title: 'Check your phone',
-        subtitle: 'Step 2 of 3 — Enter the 6-digit code we sent to your phone.',
+        subtitle: 'Step 2 of 3. Enter the 6-digit code we sent to your phone.',
         invalidOtp: 'That code is expired or incorrect. Please try again.',
         verifyCta: 'Verify code',
         verifying: 'Verifying…',
       },
       reset: {
         title: 'Create a new password',
-        subtitle: 'Step 2 of 2 — Enter your code and choose a new password.',
+        subtitle: 'Step 2 of 2. Enter your code and choose a new password.',
         otpLabel: 'Verification code',
         otpRequiredError: 'Enter the 6-digit code we sent you',
         newPasswordLabel: 'New password',
@@ -154,23 +154,23 @@ export const STRINGS = {
        for. */
     categoriesTitle: 'What are you shopping for?',
     categoriesSubtitle:
-      'Restaurants, groceries, pharmacies and more — tap a category to see what is open near you.',
+      'Restaurants, groceries, pharmacies and more. Tap a category to see what is open near you.',
     becomePartner: 'Become a partner',
-    becomePartnerHint: 'Sell on Tormame — opens our vendor site',
+    becomePartnerHint: 'Sell your food, groceries or goods on Tormame',
   },
   /* Web-only, all of it: the landing page needs a footer, and the mobile app
      has no equivalent surface. */
   footer: {
     tagline:
-      'Food, groceries, pharmacy and more — delivered to your door.',
+      'Food, groceries, pharmacy and more, delivered to your door.',
     getTheApp: 'Get the app',
     appStore: 'Download on the App Store',
     playStore: 'Get it on Google Play',
     /* Shown on a store badge whose listing URL is not configured yet: the app
        is announced, but the badge is inert rather than a link to nowhere. */
     comingSoon: 'Coming soon',
-    appStoreSoon: 'TORMAME for iPhone — coming soon to the App Store',
-    playStoreSoon: 'TORMAME for Android — coming soon to Google Play',
+    appStoreSoon: 'TORMAME for iPhone, coming soon to the App Store',
+    playStoreSoon: 'TORMAME for Android, coming soon to Google Play',
     company: 'Company',
     home: 'Browse stores',
     help: 'Help & support',
@@ -207,7 +207,7 @@ export const STRINGS = {
     contactRequired: 'Enter the email or phone number you used to order',
     codeRequired: 'Enter the code we sent you',
     notFound:
-      'We could not find an order with those details. Check them and try again — only orders that have been paid for can be tracked.',
+      'We could not find an order with those details. Check them and try again. Only orders that have been paid for can be tracked.',
     throttled: 'Too many tries. Please wait a minute and try again.',
     linkOpening: 'Opening your order…',
     linkExpired:
@@ -224,7 +224,7 @@ export const STRINGS = {
     offlineTitle: "You're offline",
     offlineMessage: 'Check your internet connection, then try again.',
     serverTitle: 'Something went wrong',
-    serverMessage: "It's not you — we're having a problem on our side. Please try again.",
+    serverMessage: "It's not you. We're having a problem on our side. Please try again.",
     genericTitle: "That didn't work",
     genericMessage: 'Please try again.',
   },
@@ -310,7 +310,7 @@ export const STRINGS = {
     required: 'Required',
     maxSelect: (count: number) => `max ${count}`,
     allergensLabel: (list: string) => `Allergens: ${list}`,
-    addToBasket: (total: string) => `Add to basket — ${total}`,
+    addToBasket: (total: string) => `Add to basket · ${total}`,
     decreaseQuantity: 'Decrease quantity',
     increaseQuantity: 'Increase quantity',
     quantityLabel: (count: number) => `Quantity: ${count}`,
@@ -375,7 +375,7 @@ export const STRINGS = {
     serviceFee: 'Service fee',
     deliveryFee: 'Delivery fee',
     total: 'Total',
-    placeOrder: (total: string) => `Place order — ${total}`,
+    placeOrder: (total: string) => `Place order · ${total}`,
     placingOrder: 'Placing your order…',
     missingAddressToast: 'Add a delivery address first',
     pickupFromTitle: 'Pick up from',
@@ -403,7 +403,7 @@ export const STRINGS = {
     confirmationCodeLabel: 'Confirmation code:',
     viewOrder: 'View order',
     failureTitle: "Payment didn't go through",
-    failureMessage: "We couldn't take payment for this order. Nothing was charged — you can try again.",
+    failureMessage: "We couldn't take payment for this order. Nothing was charged, so you can try again.",
     retryPayment: 'Try payment again',
     backToOrders: 'Back to orders',
   },
@@ -415,7 +415,7 @@ export const STRINGS = {
     documentTitle: 'Payment confirmation',
     invalidLinkTitle: 'Invalid payment link',
     invalidLinkMessage: 'This link is missing its payment reference, so there is nothing to confirm.',
-    confirmingMessage: 'Confirming your payment — this can take a moment.',
+    confirmingMessage: 'Confirming your payment. This can take a moment.',
     lookupErrorTitle: 'Something went wrong',
     lookupErrorMessage: 'We could not confirm this payment. Please contact support with your order reference if you completed payment.',
     failedTitle: 'Payment was not successful',
@@ -541,6 +541,150 @@ export const STRINGS = {
       subtitle: 'We use this to show shops near you',
     },
   },
+  /* The partners landing page. Written for a shop owner who runs a counter and
+     a phone, not for a marketing audience: short sentences, no jargon, no
+     claim we cannot keep. Rates and payout timing live in the vendor
+     agreement, so nothing here invents a number. */
+  partners: {
+    metaTitle: 'Sell on Tormame',
+    metaDescription:
+      'Put your shop in front of every phone in your town. Take orders on your phone, hand them over with a code, and see what each order earned you.',
+    navBack: 'Back to Tormame',
+    openPortal: 'Open the vendor portal',
+    openPortalHint: 'Opens the vendor portal in a new tab',
+    seeHow: 'See how it works',
+
+    headline: 'Your shop, open to every phone in town.',
+    subhead:
+      'List what you sell, take the order on your phone, hand it over. We bring you the customers and keep count of every cedi.',
+    heroNote: 'Free to list. You need a phone and your shop name to start.',
+
+    factsTitle: 'What it takes to start',
+    facts: [
+      {
+        title: 'A phone you already own',
+        body: 'The portal runs in the browser on your phone. No laptop, no app to install, no new device to buy.',
+      },
+      {
+        title: 'Your shop and your prices',
+        body: 'You type in what you sell and what it costs. Nobody changes your prices but you.',
+      },
+      {
+        title: 'One number for your account',
+        body: 'Sign up with the number you already give customers. That number is how we reach you about an order.',
+      },
+    ],
+
+    howTitle: 'How it works',
+    howLead:
+      'Four steps. Most shops are taking orders the same day they sign up.',
+    steps: [
+      {
+        title: 'Create your account',
+        body: 'Open the vendor portal, enter your number and your shop name, and set a password. That is the whole form.',
+      },
+      {
+        title: 'Add what you sell',
+        body: 'Type each item once, with its price. Add sizes and extras if you have them, so a customer picks exactly what they want and pays the right amount.',
+      },
+      {
+        title: 'Take the orders',
+        body: 'A new order shows up on your phone with everything the customer chose. You accept it, prepare it, and mark it ready.',
+      },
+      {
+        title: 'Hand over and get paid',
+        body: 'The customer reads out a six digit code at pickup or the courier carries it. The order closes and the amount lands in your wallet on the portal.',
+      },
+    ],
+
+    getTitle: 'What you get',
+    getLead: 'Everything here is in the portal on the day you sign up.',
+    features: {
+      orders: {
+        title: 'Orders arrive on your phone',
+        body: 'Item, size, extras, and the note the customer left. Nothing is written on a scrap of paper and nothing is lost when the queue is long.',
+      },
+      pricing: {
+        title: 'You set every price',
+        body: 'Change a price, mark something sold out, or hide an item for the day. It updates for customers straight away.',
+      },
+      branches: {
+        title: 'Every branch, one account',
+        body: 'Run two shops or ten. Each branch keeps its own menu and its own orders.',
+      },
+      staff: {
+        title: 'Your staff, their own logins',
+        body: 'Give a supervisor access to one branch only. You keep the owner account.',
+      },
+      money: {
+        title: 'You can see what every order earned',
+        body: 'Each completed order is listed in your wallet with its amount and its date, so your takings match your records without you keeping a second book.',
+      },
+    },
+
+    valuesTitle: 'What we hold ourselves to',
+    values: [
+      {
+        title: 'We do not touch your prices',
+        body: 'You are the shop. What you charge is your decision, and it reaches the customer exactly as you typed it.',
+      },
+      {
+        title: 'You get paid for work you finished',
+        body: 'Every order you complete is recorded with its amount. Rates and payout timing are written into the agreement you sign before you start.',
+      },
+      {
+        title: 'A person answers when you call',
+        body: 'When an order goes wrong you talk to someone who can look it up, not a form that promises a reply in five days.',
+      },
+    ],
+
+    simpleTitle: 'Built for the shop you actually run',
+    simpleBody:
+      'Most people selling on Tormame have never used software to run a shop before. That shaped every screen. Big buttons, plain words, and one thing to do on each page. If you can send a message on your phone, you can run your shop here.',
+    simplePoints: [
+      'Works on a small screen and a slow connection',
+      'Plain English, no menus hidden behind menus',
+      'Nothing is deleted by accident, and mistakes can be undone',
+    ],
+
+    faqTitle: 'Questions shop owners ask us',
+    faq: [
+      {
+        question: 'Do I need a computer?',
+        answer:
+          'No. The vendor portal opens in the browser on your phone and does everything a laptop would. Use a laptop if you have one and prefer the bigger screen.',
+      },
+      {
+        question: 'How will customers find my shop?',
+        answer:
+          'Your shop appears when someone picks your town and browses the category you sell in. Customers also reach you through search on the app and the website.',
+      },
+      {
+        question: 'What happens if I run out of something?',
+        answer:
+          'Mark it sold out in the portal. It stops appearing for customers immediately, and nobody can order it until you put it back.',
+      },
+      {
+        question: 'How do I know an order was really collected?',
+        answer:
+          'Every order carries a six digit code. The customer reads it out at pickup, or the courier carries it for a delivery. The order only closes once that code matches.',
+      },
+      {
+        question: 'When do I receive my money?',
+        answer:
+          'Each completed order is added to your wallet on the portal with its amount and date. Payout timing and any fees are set out in the vendor agreement you sign when you join.',
+      },
+      {
+        question: 'I only sell in one town. Is that a problem?',
+        answer:
+          'No. Tormame was built for towns, not only for the big cities. You pick the town or towns you serve, and only customers there see your shop.',
+      },
+    ],
+
+    closingTitle: 'Put your shop online today',
+    closingBody:
+      'Signing up takes a few minutes. Adding your first item takes a few more. After that you are open.',
+  },
   webview: {
     fallbackTitle: 'Web page',
   },
@@ -578,7 +722,7 @@ export const STRINGS = {
     graceBody:
       'Nothing is deleted straight away. Your account is scheduled for deletion in 30 days, and you can cancel any time before then by coming back to this page.',
     reasonLabel: 'Why are you leaving? (optional)',
-    reasonPlaceholder: 'Tell us what went wrong — it helps us fix it',
+    reasonPlaceholder: 'Tell us what went wrong, it helps us fix it',
     requestCta: 'Request account deletion',
     requesting: 'Sending your request…',
     confirmTitle: 'Delete your account?',
@@ -617,7 +761,7 @@ export const STRINGS = {
       {
         question: 'How much does delivery cost?',
         answer:
-          'The delivery fee depends on your address. You always see the subtotal, service fee, delivery fee and total on the checkout screen before you pay — no surprise charges.',
+          'The delivery fee depends on your address. You always see the subtotal, service fee, delivery fee and total on the checkout screen before you pay. There are no surprise charges.',
       },
       {
         question: 'How can I pay for my order?',
