@@ -28,6 +28,13 @@ export const STRINGS = {
     profile: 'Profile',
   },
   auth: {
+    /* Shown at the top of sign-in and create-account when the customer was sent
+       there by something they were already doing, so the screen explains itself
+       instead of looking like an interruption. */
+    reasons: {
+      checkout: 'Sign in to place your order. Your basket is saved and waiting.',
+      account: 'Sign in to continue.',
+    },
     invalidPhone: 'Enter a valid Ghana phone number',
     invalidEmail: 'Enter a valid email address',
     passwordRequiredError: 'Enter your password',
@@ -180,6 +187,7 @@ export const STRINGS = {
     terms: 'Terms & conditions',
     privacy: 'Privacy policy',
     cookies: 'Cookie policy',
+    deleteAccount: 'Delete my account',
     followUs: 'Follow us',
     paymentsTitle: 'We accept',
     rights: (year: number) => `© ${year} Tormame. All rights reserved.`,
@@ -332,6 +340,11 @@ export const STRINGS = {
     setDefaultLabel: 'Set as default address',
     saveAddress: 'Save address',
     saveChanges: 'Save changes',
+    /* Checkout opens this same sheet as the last step before paying, so the
+       button there says what actually happens next rather than "Save". */
+    useAndPlaceOrder: 'Use this address and place order',
+    chooseToPlaceOrderTitle: 'Where should we deliver?',
+    chooseToPlaceOrderSubtitle: 'Pick an address to place your order, or add a new one.',
     missingDetailsTitle: 'Missing details',
     missingDetailsMessage: 'Please enter a street and city/town.',
     saveErrorTitle: 'Could not save address',
@@ -372,6 +385,10 @@ export const STRINGS = {
     missingBranchToast: 'Choose which branch you want first',
     branchLoadFailed: "We couldn't load this shop's branches",
     retry: 'Try again',
+    orderingFrom: 'Ordering from',
+    signInToPlaceOrder: 'Sign in to place order',
+    signInNotice:
+      "You'll sign in before paying. Everything in your basket stays exactly as it is.",
   },
   payment: {
     headerTitle: 'Complete payment',
@@ -538,6 +555,52 @@ export const STRINGS = {
     termsOfService: 'Terms of Service',
     privacyPolicy: 'Privacy Policy',
     versionRowLabel: 'App version',
+    accountSectionTitle: 'Your account',
+    deleteAccountRow: 'Delete my account and data',
+  },
+  /* Account and data deletion. Required by the Apple and Google store policies,
+     and promised in the privacy policy — so the copy states plainly what goes,
+     what stays, and how long the customer has to change their mind. */
+  deleteAccount: {
+    title: 'Delete your account',
+    intro:
+      'You can ask us to delete your account and the personal information we hold about you.',
+    whatHappensTitle: 'What we delete',
+    whatHappens: [
+      'Your name, email address and phone number',
+      'Your saved delivery addresses',
+      'Your saved devices and sign-in sessions',
+    ],
+    whatStaysTitle: 'What we have to keep',
+    whatStays:
+      'Records of orders you already placed stay with the shops that sold to you, because they are required to keep their sales records. Your name and contact details are removed from them.',
+    graceTitle: 'You have 30 days to change your mind',
+    graceBody:
+      'Nothing is deleted straight away. Your account is scheduled for deletion in 30 days, and you can cancel any time before then by coming back to this page.',
+    reasonLabel: 'Why are you leaving? (optional)',
+    reasonPlaceholder: 'Tell us what went wrong — it helps us fix it',
+    requestCta: 'Request account deletion',
+    requesting: 'Sending your request…',
+    confirmTitle: 'Delete your account?',
+    confirmBody:
+      'We will delete your account and personal information in 30 days. You can cancel any time before then.',
+    confirmCta: 'Yes, delete my account',
+    keepCta: 'No, keep my account',
+    requestErrorToast: 'Could not send your request. Please try again.',
+    pendingTitle: 'Your account is scheduled for deletion',
+    pendingBody: (date: string) =>
+      `We will delete your account and personal information on ${date}. Until then, everything still works as normal.`,
+    pendingRequestedAt: (date: string) => `Requested on ${date}`,
+    cancelCta: 'Keep my account',
+    cancelling: 'Cancelling…',
+    cancelledToast: 'Your account will not be deleted.',
+    cancelErrorToast: 'Could not cancel. Please try again.',
+    requestedToast: 'Your deletion request has been received.',
+    signedOutTitle: 'Sign in to delete your account',
+    signedOutBody:
+      'We need to know which account to delete, so please sign in first.',
+    helpNote:
+      'Need help, or want your data removed sooner? Contact us and a person will handle it.',
   },
   help: {
     title: 'Help',

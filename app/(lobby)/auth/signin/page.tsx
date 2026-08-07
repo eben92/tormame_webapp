@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { SignInScreen } from "@/components/auth/signin-screen";
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function SignInPage() {
-  return <SignInScreen />;
+  return (
+    <Suspense>
+      <SignInScreen />
+    </Suspense>
+  );
 }

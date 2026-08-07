@@ -1,3 +1,4 @@
+import { Suspense } from "react";
 import type { Metadata } from "next";
 import { RegisterScreen } from "@/components/auth/register-screen";
 
@@ -7,5 +8,9 @@ export const metadata: Metadata = {
 };
 
 export default function RegisterPage() {
-  return <RegisterScreen />;
+  return (
+    <Suspense>
+      <RegisterScreen />
+    </Suspense>
+  );
 }

@@ -3,7 +3,7 @@
 import * as React from "react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Trash2 } from "lucide-react";
+import { ArrowLeft, Store, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { AddressSheet } from "@/components/shared/address-sheet";
 import { BranchSheet } from "@/components/checkout/branch-sheet";
@@ -20,16 +20,26 @@ import { useGetBranches } from "@/lib/api/services/branches";
 import { useGetPublicCompany } from "@/lib/api/services/companies";
 import { useCreateOrder } from "@/lib/api/services/orders";
 import { isBranchInCity, pickDefaultBranch } from "@/lib/branch";
+import { usableImageSrc } from "@/lib/order-image";
 import { STRINGS } from "@/lib/strings";
 import { cn, formatCedis } from "@/lib/utils";
-import { resolveSelectedAddress, useAddressStore } from "@/stores/address";
+import {
+  resolveSelectedAddress,
+  useAddressStore,
+  type ResolvedAddress,
+} from "@/stores/address";
 import { parsePrice, useCartStore, type CartItem } from "@/stores/cart";
 import {
   DROPOFF_INSTRUCTION_OPTIONS,
   useCheckoutStore,
 } from "@/stores/checkout";
 import { useOnboardingStore } from "@/stores/onboarding";
+import { useUserStore } from "@/stores/user";
+import type { Company } from "@/lib/api/schemas/catalog";
 import type { FulfillmentType } from "@/lib/api/schemas/order";
+
+/** Where sign-in sends the customer back to, and why they were sent there. */
+const SIGN_IN_HREF = "/auth/signin?redirect=%2Fcheckout&reason=checkout";
 
 const SERVICE_FEE_RATE = 0.02;
 const MIN_SERVICE_FEE = 1;
@@ -177,6 +187,54 @@ function FulfillmentToggle({
   );
 }
 
+/**
+ * Which store the basket belongs to. A basket can only hold one store's items,
+ * and by checkout the customer may be several screens away from the shop they
+ * picked — naming it here is how they confirm they are paying the right place.
+ */
+function StoreCard({
+  store,
+  isLoading,
+}: {
+  store?: Company | null;
+  isLoading: boolean;
+}) {
+  if (isLoading && !store) {
+    return (
+      <div className="mx-4 mt-5 flex items-center gap-3 rounded-card border border-border bg-card p-3 md:mx-0">
+        <Skeleton className="size-12 shrink-0 rounded-image" />
+        <div className="flex flex-1 flex-col gap-1.5">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-4 w-2/5" />
+        </div>
+      </div>
+    );
+  }
+  if (!store) return null;
+
+  const image = usableImageSrc(store.banner_url) ?? usableImageSrc(store.logo_url);
+
+  return (
+    <div className="mx-4 mt-5 flex items-center gap-3 rounded-card border border-border bg-card p-3 md:mx-0">
+      <span className="relative block size-12 shrink-0 overflow-hidden rounded-image bg-muted">
+        {image ? (
+          <Image src={image} alt="" fill sizes="48px" className="object-cover" />
+        ) : (
+          <span className="flex size-full items-center justify-center">
+            <Store size={20} className="text-muted-foreground" aria-hidden />
+          </span>
+        )}
+      </span>
+      <div className="flex min-w-0 flex-1 flex-col gap-0.5">
+        <Text variant="caption">{STRINGS.checkout.orderingFrom}</Text>
+        <Text variant="body-strong" className="truncate">
+          {store.name}
+        </Text>
+      </div>
+    </div>
+  );
+}
+
 function SummaryRow({
   label,
   value,
@@ -220,6 +278,18 @@ export function CheckoutScreen() {
 
   const [addressSheetOpen, setAddressSheetOpen] = React.useState(false);
   const [branchSheetOpen, setBranchSheetOpen] = React.useState(false);
+  /**
+   * Set when the sheet was opened by the Place order button rather than by the
+   * "Change" link, so choosing an address carries straight on to payment
+   * instead of dropping the customer back on the page to press it again.
+   */
+  const [placeAfterAddress, setPlaceAfterAddress] = React.useState(false);
+
+  const isSignedIn = Boolean(useUserStore((state) => state.user));
+  const userHasHydrated = useUserStore((state) => state.hasHydrated);
+  // Until the session is read back from storage, a signed-in customer would be
+  // told to sign in. Treat that first paint as signed in and let the gate settle.
+  const needsSignIn = userHasHydrated && !isSignedIn;
 
   const { data: backendAddresses = [] } = useGetAddresses();
   const selectedAddressId = useAddressStore((state) => state.selectedAddressId);
@@ -252,7 +322,8 @@ export function CheckoutScreen() {
   const contextCity = isDelivery
     ? (selectedAddress?.city ?? null)
     : onboardingCity;
-  const storeDetails = useGetPublicCompany(cartStoreId ?? "", contextCity).data;
+  const storeQuery = useGetPublicCompany(cartStoreId ?? "", contextCity);
+  const storeDetails = storeQuery.data;
   const selectedBranch =
     branches.find((branch) => branch.id === selectedBranchId) ?? null;
 
@@ -305,13 +376,16 @@ export function CheckoutScreen() {
   const deliveryFee = isDelivery ? resolvedDeliveryFee : 0;
   const total = subtotal + serviceFee + deliveryFee;
 
+  // Missing sign-in and a missing address are no longer blocked states: the
+  // button's job in both cases is to take the customer to the step that clears
+  // them. Only the branch — which nothing on this screen can resolve for them —
+  // still dims it.
   const canPlaceOrder =
     cartItems.length > 0 &&
     !createOrder.isPending &&
     !branchesQuery.isLoading &&
     !branchesQuery.isError &&
-    (!hasBranchChoice || selectedBranchId !== null) &&
-    (!isDelivery || selectedAddress !== null);
+    (!hasBranchChoice || selectedBranchId !== null);
 
   // Lines from the same product sit together, with the extra packages indented
   // under the first.
@@ -325,23 +399,12 @@ export function CheckoutScreen() {
     return Array.from(map.entries());
   }, [cartItems]);
 
-  const handlePlaceOrder = () => {
-    // The CTA stays enabled so it can name the unmet requirement rather than
-    // silently swallowing the tap.
-    if (!canPlaceOrder) {
-      if (branchesQuery.isError) {
-        toast.error(STRINGS.checkout.branchLoadFailed);
-        return;
-      }
-      if (branchesQuery.isLoading || (hasBranchChoice && !selectedBranchId)) {
-        toast.error(STRINGS.checkout.missingBranchToast);
-        return;
-      }
-      if (isDelivery && !selectedAddress) {
-        toast.error(STRINGS.checkout.missingAddressToast);
-      }
-      return;
-    }
+  /**
+   * Sends the order. The address is passed in rather than read from the store
+   * so the address sheet can hand over the one just chosen — the store's new
+   * value is not readable until the next render.
+   */
+  const submitOrder = (address: ResolvedAddress | null) => {
     if (!cartStoreId) return;
 
     createOrder.mutate(
@@ -350,13 +413,11 @@ export function CheckoutScreen() {
         fulfillment_type: fulfillmentType,
         branch_id: selectedBranchId ?? undefined,
         address_id:
-          isDelivery && resolvedAddress?.source === "saved"
-            ? resolvedAddress.address.id
+          isDelivery && address?.source === "saved"
+            ? address.address.id
             : undefined,
         new_address:
-          isDelivery && resolvedAddress?.source === "local"
-            ? resolvedAddress.address
-            : undefined,
+          isDelivery && address?.source === "local" ? address.address : undefined,
         items: cartItems.map((item) => ({
           product_id: item.productId,
           product_variant_id: item.variantId,
@@ -382,6 +443,46 @@ export function CheckoutScreen() {
       },
     );
   };
+
+  /**
+   * The one button that finishes the order, whatever is still missing. It never
+   * swallows a tap: each unmet requirement either names itself or opens the
+   * step that clears it.
+   */
+  const handlePlaceOrder = () => {
+    if (branchesQuery.isError) {
+      toast.error(STRINGS.checkout.branchLoadFailed);
+      return;
+    }
+    if (branchesQuery.isLoading || (hasBranchChoice && !selectedBranchId)) {
+      toast.error(STRINGS.checkout.missingBranchToast);
+      return;
+    }
+    // Orders belong to an account: it is how the customer tracks this one and
+    // finds it again later. Sending them to sign in now, with the basket kept
+    // as it is, beats letting them pay and lose the order.
+    if (needsSignIn) {
+      router.push(SIGN_IN_HREF);
+      return;
+    }
+    if (isDelivery && !selectedAddress) {
+      setPlaceAfterAddress(true);
+      setAddressSheetOpen(true);
+      return;
+    }
+    submitOrder(resolvedAddress);
+  };
+
+  /** Chosen in the sheet: carry on to payment if that is what opened it. */
+  const handleAddressResolved = (address: ResolvedAddress) => {
+    if (!placeAfterAddress) return;
+    setPlaceAfterAddress(false);
+    submitOrder(address);
+  };
+
+  const placeOrderLabel = needsSignIn
+    ? STRINGS.checkout.signInToPlaceOrder
+    : STRINGS.checkout.placeOrder(formatCedis(total));
 
   if (hasHydrated && cartItems.length === 0) {
     return (
@@ -422,13 +523,24 @@ export function CheckoutScreen() {
             {STRINGS.checkout.title}
           </Text>
 
+          <StoreCard store={storeDetails} isLoading={storeQuery.isLoading} />
+
           {showDeliveryOptions ? (
-            <div className="px-4 pt-5 md:px-0 md:pt-0">
+            <div className="px-4 pt-5 md:px-0">
               <FulfillmentToggle
                 value={fulfillmentType}
                 onChange={setFulfillmentType}
               />
             </div>
+          ) : null}
+
+          {needsSignIn ? (
+            <p
+              role="status"
+              className="mx-4 mt-5 rounded-card border border-primary/20 bg-primary/5 p-3 font-sans text-sm text-foreground md:mx-0"
+            >
+              {STRINGS.checkout.signInNotice}
+            </p>
           ) : null}
 
           {showBranchCard ? (
@@ -627,7 +739,7 @@ export function CheckoutScreen() {
               <span className="truncate">
                 {createOrder.isPending
                   ? STRINGS.checkout.placingOrder
-                  : STRINGS.checkout.placeOrder(formatCedis(total))}
+                  : placeOrderLabel}
               </span>
             </Button>
           </div>
@@ -645,12 +757,30 @@ export function CheckoutScreen() {
           <span className="truncate">
             {createOrder.isPending
               ? STRINGS.checkout.placingOrder
-              : STRINGS.checkout.placeOrder(formatCedis(total))}
+              : placeOrderLabel}
           </span>
         </Button>
       </div>
 
-      <AddressSheet open={addressSheetOpen} onOpenChange={setAddressSheetOpen} />
+      <AddressSheet
+        open={addressSheetOpen}
+        onOpenChange={(open) => {
+          setAddressSheetOpen(open);
+          // Dismissed without choosing — the next tap on Place order should ask
+          // again rather than fire the moment an address is edited later.
+          if (!open) setPlaceAfterAddress(false);
+        }}
+        title={
+          placeAfterAddress ? STRINGS.address.chooseToPlaceOrderTitle : undefined
+        }
+        subtitle={
+          placeAfterAddress
+            ? STRINGS.address.chooseToPlaceOrderSubtitle
+            : undefined
+        }
+        ctaLabel={placeAfterAddress ? STRINGS.address.useAndPlaceOrder : undefined}
+        onResolved={handleAddressResolved}
+      />
       <BranchSheet
         companyId={cartStoreId}
         open={branchSheetOpen}
