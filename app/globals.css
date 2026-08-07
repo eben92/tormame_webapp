@@ -91,6 +91,9 @@
   --font-heading: var(--font-bricolage);
 
   --animate-sheet-up: sheet-up var(--duration-sheet) var(--ease-standard);
+  /* The partners row of shops. Slow and linear: a marquee that eases is a
+     marquee you notice, and this one is meant to be read past. */
+  --animate-partner-marquee: partner-marquee 45s linear infinite;
 }
 
 :root {
@@ -238,6 +241,24 @@
   }
   to {
     transform: translateY(0);
+  }
+}
+
+/* Travels left to right. The track holds two identical passes, so moving it by
+   exactly one pass returns it to where it started and the loop has no seam. */
+@keyframes partner-marquee {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-partner-marquee {
+    animation: none;
+    transform: translateX(-50%);
   }
 }
 
